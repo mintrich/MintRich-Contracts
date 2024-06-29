@@ -29,9 +29,9 @@ contract FixedTest is Test {
     //     }
     // }
 
-    // function testTokenPrice() public view {
-    //     uint256 b0 = poolBalance(0);
-    //     console.logUint(b0);
+    function testTokenPrice() public view {
+        uint256 b0 = poolBalance(5000);
+        console.logUint(b0);
     //     uint256 b1 = poolBalance(1);
     //     console.logUint(b1);
     //     uint256 b2 = poolBalance(2);
@@ -56,14 +56,14 @@ contract FixedTest is Test {
     //     console.logUint(p1);
     //     console.logUint(p2);
     //     console.logUint(p3);
-    // }
-
-    function testPriceSeq() public view {
-        for (uint256 s = 1;s <= 10000;s++) {
-             uint256 price = poolBalance(s) - poolBalance(s - 1);
-             console.logUint(price);
-        }
     }
+
+    // function testPriceSeq() public view {
+    //     for (uint256 s = 1;s <= 10000;s++) {
+    //          uint256 price = poolBalance(s) - poolBalance(s - 1);
+    //          console.logUint(price);
+    //     }
+    // }
 
     function poolBalance(uint256 supply) internal pure returns (uint256 balance){
         uint256 sb = supply < CONST_B ? CONST_B - supply : supply - CONST_B;
