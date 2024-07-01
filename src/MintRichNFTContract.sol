@@ -11,7 +11,9 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, Initializable {
 
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
 
-    address public factoryAddress;
+    enum SalePhase { PUBLIC, CLOSED }
+
+    address immutable factoryAddress;
 
     uint256 public constant MAX_SUPPLY = 10000;
 
@@ -23,10 +25,15 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, Initializable {
 
     bool private locked;
 
+    SalePhase public salePhase;
+
+    event BuyItems(address indexed buyer, uint256 amount, uint256 prices, uint256 preSupply, uint256 postSupply);
+    event SellItems(address indexed seller, uint256 amount, uint256 prices, uint256 preSupply, uint256 postSupply);
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _factoryAddress) {
-        factoryAddress = _factoryAddress;
         _disableInitializers();
+        factoryAddress = _factoryAddress;
     }
 
     function initialize(
@@ -34,8 +41,10 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, Initializable {
         string calldata symbol_,
         string calldata tokenBaseURI_
     ) public initializerERC721A initializer {
+        require(msg.sender == factoryAddress, "Can only be initialized by factory");
         __ERC721A_init(name_, symbol_);
         _baseUri = tokenBaseURI_;
+        salePhase = SalePhase.PUBLIC;
     }
 
     modifier lock() {
@@ -45,18 +54,30 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, Initializable {
         locked = false;
     }
 
+    modifier checkSalePhase() {
+        require(salePhase == SalePhase.PUBLIC, "Public sale ended");
+        _;
+
+        if (activeSupply == MAX_SUPPLY) {
+            salePhase = SalePhase.CLOSED;
+        }
+    }
+
     function _startTokenId() internal view virtual override returns (uint256) {
         return 1;
     }
 
-    function buy(uint256 amount) external payable {
+    function buy(uint256 amount) external payable checkSalePhase {
         require(amount > 0 && activeSupply + amount <= MAX_SUPPLY, "Buy amount exceeds MAX_SUPPLY limit");
 
         uint256 prices = buyQuota(amount);
         require(prices <= msg.value, "Not enough ETH to buy NFTs");
 
         buyNFTs(amount);
+        uint256 preSupply = activeSupply;
         activeSupply += amount;
+
+        emit BuyItems(msg.sender, amount, prices, preSupply, activeSupply);
     }
 
     function buyNFTs(uint256 amount) internal {
@@ -79,15 +100,18 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, Initializable {
         }
     }
 
-    function sell(uint256 amount) external lock {
+    function sell(uint256 amount) external lock checkSalePhase {
         require(amount > 0 && amount <= balanceOf(msg.sender), "Sell amount exceeds owned amount");
         uint256 prices = sellQuota(amount);
 
         sellNFTs(amount);
+        uint256 preSupply = activeSupply;
         activeSupply -= amount;
 
         (bool success, ) = msg.sender.call{value: prices}(new bytes(0));
         require(success, 'ETH transfer failed');
+
+        emit SellItems(msg.sender, amount, prices, preSupply, activeSupply);
     }
 
     function sellNFTs(uint256 amount) internal {
