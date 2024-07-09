@@ -2,35 +2,24 @@
 pragma solidity ^0.8.20;
 
 import "./ERC721AQueryableUpgradeable.sol";
+import "./MintRichCommonStorage.sol";
 import "../libs/MintRichPriceLib.sol";
-import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
+import 'lib/ERC721A-Upgradeable/contracts/ERC721AUpgradeable.sol';
 
-contract MintRichNFTContract is ERC721AQueryableUpgradeable, ReentrancyGuardUpgradeable {
-
-    address immutable factoryAddress;
-
-    enum SalePhase { PUBLIC, CLOSED }
-    SalePhase public salePhase;
+contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStorage, ReentrancyGuardUpgradeable {
 
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
-    DoubleEndedQueue.Bytes32Deque internal richBank;
-
-    uint256 public constant MAX_SUPPLY = 10000;
-    uint256 public activeSupply;
-
-    uint256 public constant BASIS_POINTS = 10000;
-    uint256 public constant PROTOCOL_FEE = 30;
 
     event SaleClosed(address indexed collection);
     event BuyItems(address indexed buyer, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
     event SellItems(address indexed seller, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address _factoryAddress) {
+    constructor(address _factoryAddress) MintRichCommonStorage(_factoryAddress) {
         _disableInitializers();
-        factoryAddress = _factoryAddress;
     }
 
     function initialize(
@@ -38,12 +27,17 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, ReentrancyGuardUpgr
         string calldata symbol_,
         bytes calldata information
     ) public initializerERC721A initializer {
-        require(msg.sender == factoryAddress, "Can only be initialized by factory");
+        require(msg.sender == FACTORY, "Can only be initialized by factory");
         __ERC721A_init(name_, symbol_);
         __ERC721AQueryable_init();
         __ReentrancyGuard_init();
-        information;
+
+        initInformation(information);
         salePhase = SalePhase.PUBLIC;
+    }
+
+    function initInformation(bytes calldata information) internal {
+        
     }
 
     modifier checkSalePhase() {
@@ -83,10 +77,10 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, ReentrancyGuardUpgr
         address buyer = msg.sender;
         uint256 mintAmount = amount;
 
-        if (!richBank.empty()) {
-            uint256 withdrawAmount = Math.min(amount, richBank.length());
+        if (!bank.empty()) {
+            uint256 withdrawAmount = Math.min(amount, bank.length());
             for (uint256 i = 0; i < withdrawAmount;) {
-                transferFrom(address(this), buyer, uint256(richBank.popBack()));
+                transferFrom(address(this), buyer, uint256(bank.popBack()));
                 unchecked {
                     ++i;
                 }
@@ -121,7 +115,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, ReentrancyGuardUpgr
 
         for (uint256 i = 0; i < amount;) {
             transferFrom(seller, address(this), tokenIds[i]);
-            richBank.pushFront(bytes32(tokenIds[i]));
+            bank.pushFront(bytes32(tokenIds[i]));
             unchecked {
                 ++i;
             }
@@ -136,6 +130,14 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, ReentrancyGuardUpgr
     function sellQuota(uint256 amount) public view returns (uint256 prices, uint256 fees) {
         prices = MintRichPriceLib.totalTokenPrices(activeSupply - amount, amount);
         fees = (prices * PROTOCOL_FEE) / BASIS_POINTS;
+    }
+
+    function tokenURI(uint256 tokenId) public view
+        override(ERC721AUpgradeable, IERC721AUpgradeable)
+        returns (string memory)
+    {
+        require(_exists(tokenId), "Token not exist");
+        return "";
     }
 
 }
