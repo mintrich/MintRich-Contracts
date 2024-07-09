@@ -17,9 +17,17 @@ abstract contract MintRichCommonStorage {
     uint256 public constant BASIS_POINTS = 10000;
     uint256 public constant PROTOCOL_FEE = 30;
 
-    SalePhase internal salePhase;
+    address internal constant REWARDS_SIGNER = address(0);
+    address internal constant MINT_RICH_RECIPIENT = address(0);
 
+    SalePhase internal salePhase;
     uint256 public activeSupply;
+
+    uint256 public totalFees;
+    uint256 public claimedFees;
+
+    bytes32 internal DOMAIN_SEPARATOR;
+    mapping(address => uint256) public rewardsClaimed;
     
     DoubleEndedQueue.Bytes32Deque internal bank;
 

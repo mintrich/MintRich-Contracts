@@ -14,9 +14,12 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
 
     event SaleClosed(address indexed collection);
+
     event BuyItems(address indexed buyer, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
     event SellItems(address indexed seller, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
 
+    event ClaimRewards(address indexed recipient, uint256 claimedAmount);
+    
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _factoryAddress) MintRichCommonStorage(_factoryAddress) {
         _disableInitializers();
@@ -34,6 +37,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
 
         initInformation(information);
         salePhase = SalePhase.PUBLIC;
+        DOMAIN_SEPARATOR = _computeDomainSeparator();
     }
 
     function initInformation(bytes calldata information) internal {
@@ -62,6 +66,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         require(totalPrices <= msg.value, "Not enough ETH to buy NFTs");
 
         buyNFTs(amount);
+        totalFees += fees;
         uint256 preSupply = activeSupply;
         activeSupply += amount;
 
@@ -100,6 +105,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         uint256 receivedPrices = prices - fees;
 
         sellNFTs(amount);
+        totalFees += fees;
         uint256 preSupply = activeSupply;
         activeSupply -= amount;
 
@@ -132,12 +138,76 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         fees = (prices * PROTOCOL_FEE) / BASIS_POINTS;
     }
 
+    function saleBalance() public view returns (uint256 balance) {
+        balance = MintRichPriceLib.totalTokenPrices(0, activeSupply);
+    }
+
+    function claimRewards(
+        uint256 totalRewards,
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s
+    ) external nonReentrant {
+        address payable recipient = payable(msg.sender);
+        require(_verfySigner(recipient, totalRewards, _v, _r, _s) == REWARDS_SIGNER, "Invalid signer");
+        require(totalRewards > rewardsClaimed[recipient], "Nothing to claim");
+
+        uint256 toClaim = totalRewards - rewardsClaimed[recipient];
+        require(toClaim <= totalFees - claimedFees, "Invalid claim amount");
+
+        claimedFees += toClaim;
+        rewardsClaimed[recipient] = totalRewards;
+        emit ClaimRewards(recipient, toClaim);
+
+        (bool success, ) = recipient.call{value: toClaim}(new bytes(0));
+        require(success, 'ETH transfer failed');
+    }
+
     function tokenURI(uint256 tokenId) public view
         override(ERC721AUpgradeable, IERC721AUpgradeable)
         returns (string memory)
     {
         require(_exists(tokenId), "Token not exist");
         return "";
+    }
+
+    function _verfySigner(
+        address recipient,
+        uint256 totalRewards,
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s
+    ) internal view returns (address _signer) {
+        _signer = ecrecover(
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    DOMAIN_SEPARATOR,
+                    keccak256(
+                        abi.encode(
+                            keccak256("MintRichRewards(address recipient,uint256 totalRewards)"),
+                            recipient,
+                            totalRewards
+                        )
+                    )
+                )
+            ), _v, _r, _s
+        );
+    }
+
+    function _computeDomainSeparator() internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                    ),
+                    keccak256(bytes("MintRichNFTContract")),
+                    keccak256("1"),
+                    block.chainid,
+                    address(this)
+                )
+            );
     }
 
 }
