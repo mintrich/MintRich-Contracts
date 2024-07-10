@@ -6,6 +6,8 @@ import "./MintRichCommonStorage.sol";
 import "../libs/MintRichPriceLib.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
@@ -31,6 +33,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
     function initialize(
         string calldata name_,
         string calldata symbol_,
+        bytes32 packedData,
         bytes calldata information
     ) public initializerERC721A initializer {
         require(msg.sender == FACTORY, "Can only be initialized by factory");
@@ -38,13 +41,15 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         __ERC721AQueryable_init();
         __ReentrancyGuard_init();
 
-        initInformation(information);
+        initInfo(packedData, information);
         salePhase = SalePhase.PUBLIC;
         DOMAIN_SEPARATOR = _computeDomainSeparator();
     }
 
-    function initInformation(bytes calldata information) internal {
-        
+    function initInfo(bytes32 packedData, bytes calldata information) internal {
+        imageType = uint8(uint256(packedData));
+        require(imageType == IMAGE_TYPE_SINGLE || imageType == IMAGE_TYPE_MULIT, "Invalid imageType");
+        baseURI = abi.decode(information, (string));
     }
 
     modifier checkSalePhase() {
@@ -166,7 +171,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
             MINTSWAP_BIDS_SELECTOR, 
             address(this), 
             uint64(MAX_SUPPLY), 
-            (uint128) (bids / MAX_SUPPLY), 
+            uint128(bids / MAX_SUPPLY), 
             MINTSWAP_BIDS_EXPIRATION_TIME, 
             WETH9));
 
@@ -198,7 +203,32 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         returns (string memory)
     {
         require(_exists(tokenId), "Token not exist");
-        return "";
+
+        string memory imageURI;
+        if (imageType == IMAGE_TYPE_SINGLE) {
+            imageURI = baseURI;
+        }
+        if (imageType == IMAGE_TYPE_MULIT) {
+            imageURI = string.concat(baseURI, Strings.toString(tokenId), ".png");
+        }
+
+        return 
+            string(
+                abi.encodePacked(
+                    'data:application/json;base64,',
+                    Base64.encode(
+                        abi.encodePacked(
+                            '{"name":"',
+                            name(),
+                            ' #' ,
+                            Strings.toString(tokenId),
+                            '","image":"',
+                            imageURI,
+                            '"}'
+                        )
+                    )
+                )
+            );
     }
 
     function _verfySigner(

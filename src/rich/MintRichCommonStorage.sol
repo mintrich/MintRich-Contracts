@@ -33,6 +33,12 @@ abstract contract MintRichCommonStorage {
 
     uint64 internal constant MINTSWAP_BIDS_EXPIRATION_TIME = 2035756800;
 
+    uint8 internal constant IMAGE_TYPE_SINGLE = 0;
+    uint8 internal constant IMAGE_TYPE_MULIT = 1;
+
+    uint8 internal imageType;
+    string internal baseURI;
+
     SalePhase internal salePhase;
     uint256 public activeSupply;
 

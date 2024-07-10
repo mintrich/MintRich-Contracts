@@ -35,13 +35,14 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
         bytes32 collectionId,
         string calldata name,
         string calldata symbol,
+        bytes32 packedData,
         bytes calldata information
     ) external {
         checkCaller(collectionId);
         address collection = Clones.cloneDeterministic(implementationAddress, collectionId);
 
         (bool success, bytes memory returnData) = collection.call(abi.encodeCall(
-            MintRichNFTContract.initialize, (name, symbol, information)));
+            MintRichNFTContract.initialize, (name, symbol, packedData, information)));
         if (!success) {
             assembly {
                 revert(add(returnData, 32), mload(returnData))
