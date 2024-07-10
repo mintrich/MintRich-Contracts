@@ -4,13 +4,16 @@ pragma solidity ^0.8.20;
 import "./ERC721AQueryableUpgradeable.sol";
 import "./MintRichCommonStorage.sol";
 import "../libs/MintRichPriceLib.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
 import 'lib/ERC721A-Upgradeable/contracts/ERC721AUpgradeable.sol';
 
 contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStorage, ReentrancyGuardUpgradeable {
 
+    using Address for address payable;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
 
     event SaleClosed(address indexed collection);
@@ -58,6 +61,13 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         return 1;
     }
 
+    function owner() public view returns (address) {
+        if (salePhase == SalePhase.CLOSED) {
+            return address(0);
+        }
+        return IERC721AUpgradeable(FACTORY).ownerOf(uint256(uint160(address(this))));
+    }
+
     function buy(uint256 amount) external payable nonReentrant checkSalePhase {
         require(amount > 0 && activeSupply + amount <= MAX_SUPPLY, "Buy amount exceeds MAX_SUPPLY limit");
 
@@ -73,8 +83,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         emit BuyItems(msg.sender, amount, prices, fees, preSupply, activeSupply);
 
         if (msg.value > totalPrices) {
-            (bool success, ) = msg.sender.call{value: msg.value - totalPrices}(new bytes(0));
-            require(success, 'ETH transfer failed');
+            payable(msg.sender).sendValue(msg.value - totalPrices);
         }
     }
 
@@ -111,8 +120,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
 
         emit SellItems(msg.sender, amount, prices, fees, preSupply, activeSupply);
 
-        (bool success, ) = msg.sender.call{value: receivedPrices}(new bytes(0));
-        require(success, 'ETH transfer failed');
+        payable(msg.sender).sendValue(receivedPrices);
     }
 
     function sellNFTs(uint256 amount) internal {
@@ -142,6 +150,29 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         balance = MintRichPriceLib.totalTokenPrices(0, activeSupply);
     }
 
+    function processSaleClosed() external nonReentrant {
+        require(msg.sender == MINT_RICH_ADMIN, "Only admin can process");
+        require(salePhase == SalePhase.CLOSED, "Sale not closed");
+
+        uint256 totalBalance = saleBalance();
+        uint256 share = (totalBalance * MINT_RICH_SHARE_POINTS) / BASIS_POINTS;
+        MINT_RICH_RECIPIENT.sendValue(share);
+
+        uint256 bids = (totalBalance * MINT_RICH_BIDS_POINTS) / BASIS_POINTS;
+        Address.functionCallWithValue(WETH9, abi.encodeWithSelector(WETH9_DEPOSIT_SELECTOR), bids);
+        IERC20(WETH9).approve(MINTSWAP_NFT_MARKETPLACE, bids);
+
+        Address.functionCall(MINTSWAP_NFT_MARKETPLACE, abi.encodeWithSelector(
+            MINTSWAP_BIDS_SELECTOR, 
+            address(this), 
+            uint64(MAX_SUPPLY), 
+            (uint128) (bids / MAX_SUPPLY), 
+            MINTSWAP_BIDS_EXPIRATION_TIME, 
+            WETH9));
+
+        Address.functionCall(FACTORY, abi.encodeWithSelector(FACTORY_BURN_SELECTOR));
+    }
+
     function claimRewards(
         uint256 totalRewards,
         uint8 _v,
@@ -159,8 +190,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         rewardsClaimed[recipient] = totalRewards;
         emit ClaimRewards(recipient, toClaim);
 
-        (bool success, ) = recipient.call{value: toClaim}(new bytes(0));
-        require(success, 'ETH transfer failed');
+        recipient.sendValue(toClaim);
     }
 
     function tokenURI(uint256 tokenId) public view
