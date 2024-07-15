@@ -5,11 +5,6 @@ import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
 abstract contract MintRichCommonStorage {
 
-    enum SalePhase { 
-        PUBLIC, 
-        CLOSED 
-    }
-
     address public immutable FACTORY;
 
     uint256 public constant MAX_SUPPLY = 10000;
@@ -39,6 +34,11 @@ abstract contract MintRichCommonStorage {
     uint8 internal imageType;
     string internal baseURI;
 
+    enum SalePhase { 
+        PUBLIC, 
+        CLOSED 
+    }
+    
     SalePhase internal salePhase;
     uint256 public activeSupply;
 

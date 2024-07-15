@@ -23,7 +23,7 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
         _disableInitializers();
     }
 
-    function initialize(address _implementationAddress) initializer public {
+    function initialize(address _implementationAddress) initializer external {
         __ERC721_init("MintRich Owner", "MROwner");
         __Ownable_init(_msgSender());
         __UUPSUpgradeable_init();
@@ -53,7 +53,7 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
         emit MintRichCollectionCreated(msg.sender, collection, collectionId, name, symbol);
     }
 
-    function predictDeterministicAddress(bytes32 collectionId) external view returns (address) {
+    function predictDeterministicAddress(bytes32 collectionId) public view returns (address) {
         return Clones.predictDeterministicAddress(implementationAddress, collectionId, address(this));
     }
 
@@ -74,7 +74,8 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
         return IMetadataRenderer(metadataRenderer).tokenURI(tokenId);
     }
 
-    function setMetadataRenderer(address _metadataRenderer) external onlyOwner {    
+    function setMetadataRenderer(address _metadataRenderer) external onlyOwner {
+        require(_metadataRenderer != address(0), "_metadataRenderer can't be zero address"); 
         metadataRenderer = _metadataRenderer;
     }
 

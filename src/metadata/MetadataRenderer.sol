@@ -22,7 +22,7 @@ contract MetadataRenderer is IMetadataRenderer, Ownable {
 
     function tokenURI(
         uint256 tokenID
-    ) public view override returns (string memory) {
+    ) external view override returns (string memory) {
         return
             string(
                 abi.encodePacked(
@@ -52,11 +52,11 @@ contract MetadataRenderer is IMetadataRenderer, Ownable {
             );
     }
 
-    function setName(string memory _newName) external onlyOwner {
+    function setName(string calldata _newName) external onlyOwner {
         name = _newName;
     }
 
-    function setDescription(string memory _description) external onlyOwner {
+    function setDescription(string calldata _description) external onlyOwner {
         description = _description;
     }
     

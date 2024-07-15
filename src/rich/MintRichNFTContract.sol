@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
@@ -35,7 +36,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         string calldata symbol_,
         bytes32 packedData,
         bytes calldata information
-    ) public initializerERC721A initializer {
+    ) external initializerERC721A initializer {
         require(msg.sender == FACTORY, "Can only be initialized by factory");
         __ERC721A_init(name_, symbol_);
         __ERC721AQueryable_init();
@@ -80,11 +81,11 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         uint256 totalPrices = prices + fees;
         require(totalPrices <= msg.value, "Not enough ETH to buy NFTs");
 
-        buyNFTs(amount);
         totalFees += fees;
         uint256 preSupply = activeSupply;
         activeSupply += amount;
 
+        buyNFTs(amount);
         emit BuyItems(msg.sender, amount, prices, fees, preSupply, activeSupply);
 
         if (msg.value > totalPrices) {
@@ -118,11 +119,11 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         (uint256 prices, uint256 fees) = sellQuota(amount);
         uint256 receivedPrices = prices - fees;
 
-        sellNFTs(amount);
         totalFees += fees;
         uint256 preSupply = activeSupply;
         activeSupply -= amount;
 
+        sellNFTs(amount);
         emit SellItems(msg.sender, amount, prices, fees, preSupply, activeSupply);
 
         payable(msg.sender).sendValue(receivedPrices);
@@ -238,7 +239,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         bytes32 _r,
         bytes32 _s
     ) internal view returns (address _signer) {
-        _signer = ecrecover(
+        _signer = ECDSA.recover(
             keccak256(
                 abi.encodePacked(
                     "\x19\x01",
