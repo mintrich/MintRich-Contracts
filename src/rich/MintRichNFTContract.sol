@@ -27,7 +27,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
     event ClaimRewards(address indexed recipient, uint256 claimedAmount);
     
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address _factoryAddress) MintRichCommonStorage(_factoryAddress) {
+    constructor() {
         _disableInitializers();
     }
 
@@ -37,13 +37,13 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         bytes32 packedData,
         bytes calldata information
     ) external initializerERC721A initializer {
-        require(msg.sender == FACTORY, "Can only be initialized by factory");
         __ERC721A_init(name_, symbol_);
         __ERC721AQueryable_init();
         __ReentrancyGuard_init();
 
         initInfo(packedData, information);
         salePhase = SalePhase.PUBLIC;
+        factoryAddress = msg.sender;
         DOMAIN_SEPARATOR = _computeDomainSeparator();
     }
 
@@ -71,7 +71,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         if (salePhase == SalePhase.CLOSED) {
             return address(0);
         }
-        return IERC721AUpgradeable(FACTORY).ownerOf(uint256(uint160(address(this))));
+        return IERC721AUpgradeable(factoryAddress).ownerOf(uint256(uint160(address(this))));
     }
 
     function buy(uint256 amount) external payable nonReentrant checkSalePhase {
@@ -176,7 +176,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
             MINTSWAP_BIDS_EXPIRATION_TIME, 
             WETH9));
 
-        Address.functionCall(FACTORY, abi.encodeWithSelector(FACTORY_BURN_SELECTOR));
+        Address.functionCall(factoryAddress, abi.encodeWithSelector(FACTORY_BURN_SELECTOR));
     }
 
     function claimRewards(

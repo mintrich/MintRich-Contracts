@@ -5,8 +5,6 @@ import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
 abstract contract MintRichCommonStorage {
 
-    address public immutable FACTORY;
-
     uint256 public constant MAX_SUPPLY = 10000;
     
     uint256 public constant BASIS_POINTS = 10000;
@@ -31,15 +29,16 @@ abstract contract MintRichCommonStorage {
     uint8 internal constant IMAGE_TYPE_SINGLE = 0;
     uint8 internal constant IMAGE_TYPE_MULIT = 1;
 
-    uint8 internal imageType;
-    string internal baseURI;
+    uint8 public imageType;
+    string public baseURI;
 
     enum SalePhase { 
         PUBLIC, 
         CLOSED 
     }
     
-    SalePhase internal salePhase;
+    SalePhase public salePhase;
+    address public factoryAddress;
     uint256 public activeSupply;
 
     uint256 public totalFees;
@@ -49,9 +48,5 @@ abstract contract MintRichCommonStorage {
     mapping(address => uint256) public rewardsClaimed;
     
     DoubleEndedQueue.Bytes32Deque internal bank;
-
-    constructor(address _factoryAddress) {
-        FACTORY = _factoryAddress;
-    }
 
 }
