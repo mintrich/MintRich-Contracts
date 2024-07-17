@@ -79,6 +79,11 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
         metadataRenderer = _metadataRenderer;
     }
 
+    function setImplementationAddress(address _implementationAddress) external onlyOwner {
+        require(_implementationAddress != address(0), "_implementationAddress can't be zero address"); 
+        implementationAddress = _implementationAddress;
+    }
+
     function burnToken() external {
         uint256 tokenID = uint256(uint160(msg.sender));
         _requireOwned(tokenID);

@@ -9,11 +9,17 @@ import {IBeacon} from "@openzeppelin/contracts/proxy/beacon/IBeacon.sol";
 contract TestMintRich is Test {
 
     address constant OWNER_ADDRESS = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
+    address constant TEST_ADDRESS = 0x21cB920Bf98041CD33A68F7543114a98e420Da0B;
     
     address private beacon;
     address private beaconProxy;
+    address private factoryProxy;
+
+    MintRichNFTFactoryContract private factory;
 
     function setUp() public {
+        vm.startPrank(OWNER_ADDRESS);
+
         beacon = Upgrades.deployBeacon("MintRichNFTContract.sol", OWNER_ADDRESS);
         address implAddressV1 = IBeacon(beacon).implementation();
         console.log("beacon -> %s", beacon);
@@ -32,10 +38,21 @@ contract TestMintRich is Test {
         assertEq(proxy.symbol(), "MRBP");
         assertEq(proxy.imageType(), 0);
         assertEq(proxy.baseURI(), "");
+
+        factoryProxy = Upgrades.deployUUPSProxy(
+            "MintRichNFTFactoryContract.sol",
+            abi.encodeCall(MintRichNFTFactoryContract.initialize, (beaconProxy))
+        );
+        console.log("factoryProxy -> %s", factoryProxy);
+
+        factory = MintRichNFTFactoryContract(factoryProxy);
+        assertEq(factory.owner(), OWNER_ADDRESS);
+        
+        vm.stopPrank();
     }
 
     function testMintRich() public {
-
+        
     }
 
 }
