@@ -99,11 +99,10 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
 
         if (!bank.empty()) {
             uint256 withdrawAmount = Math.min(amount, bank.length());
-            for (uint256 i = 0; i < withdrawAmount;) {
-                transferFrom(address(this), buyer, uint256(bank.popBack()));
-                unchecked {
-                    ++i;
-                }
+            for (uint256 i = 0; i < withdrawAmount; ++i) {
+                uint256 tokenId = uint256(bank.popBack());
+                _approve(buyer, tokenId);
+                transferFrom(address(this), buyer, tokenId);
             }
             mintAmount = amount - withdrawAmount;
         }
@@ -133,12 +132,9 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         address seller = msg.sender;
         uint256[] memory tokenIds = tokensOfOwner(seller);
 
-        for (uint256 i = 0; i < amount;) {
+        for (uint256 i = 0; i < amount; ++i) {
             transferFrom(seller, address(this), tokenIds[i]);
             bank.pushFront(bytes32(tokenIds[i]));
-            unchecked {
-                ++i;
-            }
         }
     }
 

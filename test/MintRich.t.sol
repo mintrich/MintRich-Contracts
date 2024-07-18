@@ -68,6 +68,8 @@ contract TestMintRich is Test {
         assertEq(mmn.baseURI(), "ipfs://xxx/");
         assertEq(mmn.owner(), TEST_ADDRESS);
 
+        (uint256 prices3, ) = mmn.buyQuota(7);
+
         (uint256 prices, uint256 fees) = mmn.buyQuota(10);
         uint256 totalPrices = prices + fees;
         vm.deal(TEST_ADDRESS, totalPrices + 1);
@@ -86,7 +88,6 @@ contract TestMintRich is Test {
         assertEq(mmn.saleBalance(), prices - prices2);
         assertEq(mmn.totalFees(), fees + fees2);
 
-        (uint256 prices3, ) = mmn.buyQuota(7);
         assertEq(mmn.saleBalance(), prices3);
         uint256[] memory tokenIds = mmn.tokensOfOwner(TEST_ADDRESS);
         assertEq(tokenIds[0], 4);
@@ -101,6 +102,9 @@ contract TestMintRich is Test {
         assertEq(mmn.activeSupply(), 1006);
         assertEq(mmn.saleBalance(), prices3 + prices4);
         assertEq(mmn.totalFees(), fees + fees2 + fees4);
+
+        uint256[] memory tokenIds2 = mmn.tokensOfOwner(TEST2_ADDRESS);
+        assertEq(tokenIds2[0], 1);
 
         vm.expectRevert(bytes("Buy amount exceeds MAX_SUPPLY limit"));
         mmn.buy(9000);
