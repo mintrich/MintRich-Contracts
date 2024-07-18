@@ -52,7 +52,20 @@ contract TestMintRich is Test {
     }
 
     function testMintRich() public {
+        vm.startPrank(TEST_ADDRESS);
+        uint256 addr = uint256(uint160(TEST_ADDRESS)) << 96;
+        uint256 collectionId = addr + 1;
+        assertEq(bytes32(collectionId), bytes32(0x21cB920Bf98041CD33A68F7543114a98e420Da0B000000000000000000000001));
+        factory.createRichCollection(bytes32(collectionId), "Meme NFT", "MMN", bytes32(0), abi.encode("ipfs://xxx/"));
         
+        address collection = factory.predictDeterministicAddress(bytes32(collectionId));
+        MintRichNFTContract mmn = MintRichNFTContract(collection);
+        assertEq(mmn.name(), "Meme NFT");
+        assertEq(mmn.symbol(), "MMN");
+        assertEq(mmn.factoryAddress(), factoryProxy);
+        assertEq(mmn.imageType(), 0);
+        assertEq(mmn.baseURI(), "ipfs://xxx/");
+        vm.stopPrank();
     }
 
 }
