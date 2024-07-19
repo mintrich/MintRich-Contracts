@@ -46,7 +46,7 @@ contract MetadataRenderer is IMetadataRenderer, Ownable {
                     description,
                     '",',
                     '"owner": "',
-                    IERC721AUpgradeable(msg.sender).ownerOf(tokenID),
+                    Strings.toHexString(IERC721AUpgradeable(msg.sender).ownerOf(tokenID)),
                     '"}'
                 )
             );
