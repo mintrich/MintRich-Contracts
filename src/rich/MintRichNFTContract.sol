@@ -14,6 +14,7 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
 import 'lib/ERC721A-Upgradeable/contracts/ERC721AUpgradeable.sol';
 
+/// @custom:oz-upgrades-from MintRichNFTContract
 contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStorage, ReentrancyGuardUpgradeable {
 
     using Address for address payable;

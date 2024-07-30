@@ -25,6 +25,8 @@ contract MintRichNFTContractScript is Script {
         address beaconProxy = Upgrades.deployBeaconProxy(beacon, data);
         console.log("beaconProxy -> %s", beaconProxy);
 
+        // Upgrades.upgradeBeacon(0x6826E8EF4a68439ac16e7EdC1e5608F419DC35Df, "MintRichNFTContract.sol");
+
         vm.stopBroadcast();
     }
 
