@@ -12,14 +12,14 @@ abstract contract MintRichCommonStorage {
     uint256 public constant MINT_RICH_SHARE_POINTS = 1000;
     uint256 public constant MINT_RICH_BIDS_POINTS = 9000;
 
-    address internal constant REWARDS_SIGNER = 0xC565FC29F6df239Fe3848dB82656F2502286E97d;
+    address internal constant REWARDS_SIGNER = address(0); // TODO replace when deployed
     
-    address internal constant MINT_RICH_ADMIN = 0x9AabD861DFA0dcEf61b55864A03eF257F1c6093A;
-    address payable internal constant MINT_RICH_RECIPIENT = payable(0xcA1F5EfC5Fb73CE3Ed7a092a2eBa8738Abf18852);
+    address internal constant MINT_RICH_ADMIN = address(0); // TODO replace when deployed
+    address payable internal constant MINT_RICH_RECIPIENT = payable(address(0)); // TODO replace when deployed
 
     address internal constant WETH9 = 0x4200000000000000000000000000000000000006;
-    // address internal constant MINTSWAP_NFT_MARKETPLACE = 0x314b4576fDEd7Ce5a0B5e0a394f5252de4d98D27;
-    address internal constant MINTSWAP_NFT_MARKETPLACE = 0xb71663651BdA299a0891deFFB5c2286943e076B4;
+    address internal constant MINTSWAP_NFT_MARKETPLACE = 0x314b4576fDEd7Ce5a0B5e0a394f5252de4d98D27;
+    // address internal constant MINTSWAP_NFT_MARKETPLACE = 0xb71663651BdA299a0891deFFB5c2286943e076B4;
 
     bytes4 internal constant WETH9_DEPOSIT_SELECTOR = bytes4(keccak256("deposit()"));
     bytes4 internal constant MINTSWAP_BIDS_SELECTOR = bytes4(keccak256("createOrUpdateCollectionBid(address,uint64,uint128,uint64,address)"));
