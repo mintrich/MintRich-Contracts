@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-import "./ERC721AQueryableUpgradeable.sol";
 import "./MintRichCommonStorage.sol";
 import "../libs/MintRichPriceLib.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -13,8 +12,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
 import 'lib/ERC721A-Upgradeable/contracts/ERC721AUpgradeable.sol';
+import 'lib/ERC721A-Upgradeable/contracts/extensions/ERC721AQueryableUpgradeable.sol';
 
-/// @custom:oz-upgrades-from MintRichNFTContract
 contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStorage, ReentrancyGuardUpgradeable {
 
     using Address for address payable;
@@ -68,7 +67,11 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         return 1;
     }
 
-    function owner() public view returns (address) {
+    function amountInBank() external view returns (uint256) {
+        return bank.length();
+    }
+
+    function owner() external view returns (address) {
         if (salePhase == SalePhase.CLOSED) {
             return address(0);
         }
@@ -113,7 +116,8 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         }
     }
 
-    function sell(uint256 amount) external nonReentrant checkSalePhase {
+    function sell(uint8[] calldata tokenIds) external nonReentrant checkSalePhase {
+        uint256 amount = tokenIds.length;
         require(amount > 0 && amount <= balanceOf(msg.sender), "Sell amount exceeds owned amount");
         
         (uint256 prices, uint256 fees) = sellQuota(amount);
@@ -123,19 +127,21 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         uint256 preSupply = activeSupply;
         activeSupply -= amount;
 
-        sellNFTs(amount);
+        sellNFTs(tokenIds);
         emit SellItems(msg.sender, amount, prices, fees, preSupply, activeSupply);
 
         payable(msg.sender).sendValue(receivedPrices);
     }
 
-    function sellNFTs(uint256 amount) internal {
+    function sellNFTs(uint8[] calldata tokenIds) internal {
         address seller = msg.sender;
-        uint256[] memory tokenIds = tokensOfOwner(seller);
+        uint256 amount = tokenIds.length;
 
         for (uint256 i = 0; i < amount; ++i) {
-            transferFrom(seller, address(this), tokenIds[i]);
-            bank.pushFront(bytes32(tokenIds[i]));
+            uint256 tokenId = (uint256)(tokenIds[i]);
+            require(ownerOf(tokenId) == seller, "Some tokenId does not belong to the seller");
+            transferFrom(seller, address(this), tokenId);
+            bank.pushFront(bytes32(tokenId));
         }
     }
 

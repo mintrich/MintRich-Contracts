@@ -28,6 +28,7 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
         __Ownable_init(_msgSender());
         __UUPSUpgradeable_init();
 
+        require(_implementationAddress != address(0), "_implementationAddress can't be zero address"); 
         implementationAddress = _implementationAddress;
     }
 
@@ -49,11 +50,11 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
             }                
         }
 
-        _mint(msg.sender, uint256(uint160(collection)));
+        _safeMint(msg.sender, uint256(uint160(collection)));
         emit MintRichCollectionCreated(msg.sender, collection, collectionId, name, symbol);
     }
 
-    function predictDeterministicAddress(bytes32 collectionId) public view returns (address) {
+    function predictDeterministicAddress(bytes32 collectionId) external view returns (address) {
         return Clones.predictDeterministicAddress(implementationAddress, collectionId, address(this));
     }
 
