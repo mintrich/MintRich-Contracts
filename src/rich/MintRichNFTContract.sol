@@ -116,9 +116,9 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         }
     }
 
-    function sell(uint8[] calldata tokenIds) external nonReentrant checkSalePhase {
-        uint256 amount = tokenIds.length;
+    function sell(uint256 amount, bytes calldata tokenIds) external nonReentrant checkSalePhase {
         require(amount > 0 && amount <= balanceOf(msg.sender), "Sell amount exceeds owned amount");
+        require(amount * 2 == tokenIds.length, "TokenIds length don't match");
         
         (uint256 prices, uint256 fees) = sellQuota(amount);
         uint256 receivedPrices = prices - fees;
@@ -133,12 +133,15 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         payable(msg.sender).sendValue(receivedPrices);
     }
 
-    function sellNFTs(uint8[] calldata tokenIds) internal {
+    function sellNFTs(bytes memory tokenIds) internal {
         address seller = msg.sender;
-        uint256 amount = tokenIds.length;
+        uint256 length = tokenIds.length;
 
-        for (uint256 i = 0; i < amount; ++i) {
-            uint256 tokenId = (uint256)(tokenIds[i]);
+        for (uint256 i = 0; i < length; i = i + 2) {
+            uint256 tokenId;
+            assembly {
+                tokenId := and(mload(add(tokenIds, add(i, 2))), 0xFFFF)
+            }
             require(ownerOf(tokenId) == seller, "Some tokenId does not belong to the seller");
             transferFrom(seller, address(this), tokenId);
             bank.pushFront(bytes32(tokenId));
