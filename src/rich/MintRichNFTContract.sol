@@ -142,7 +142,6 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
             assembly {
                 tokenId := and(mload(add(tokenIds, add(i, 2))), 0xFFFF)
             }
-            require(ownerOf(tokenId) == seller, "Some tokenId does not belong to the seller");
             transferFrom(seller, address(this), tokenId);
             bank.pushFront(bytes32(tokenId));
         }

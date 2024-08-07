@@ -82,7 +82,7 @@ contract TestMintRich is Test {
         (uint256 prices2, uint256 fees2) = mmn.sellQuota(3);
         uint256 receivedPrices = prices2 - fees2;
         vm.deal(TEST_ADDRESS, 0);
-        mmn.sell(3);
+        mmn.sell(3, bytes.concat(bytes6(0x000100020003)));
         assertEq(TEST_ADDRESS.balance, receivedPrices);
         assertEq(mmn.activeSupply(), 7);
         assertEq(mmn.saleBalance(), prices - prices2);
