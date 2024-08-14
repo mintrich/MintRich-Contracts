@@ -14,7 +14,7 @@ import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
 import 'lib/ERC721A-Upgradeable/contracts/ERC721AUpgradeable.sol';
 import 'lib/ERC721A-Upgradeable/contracts/extensions/ERC721AQueryableUpgradeable.sol';
 
-contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStorage, ReentrancyGuardUpgradeable {
+contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStorage, ReentrancyGuardUpgradeable, ERC721A__IERC721ReceiverUpgradeable {
 
     using Address for address payable;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
@@ -274,6 +274,15 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
                     address(this)
                 )
             );
+    }
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4) {
+        return ERC721A__IERC721ReceiverUpgradeable.onERC721Received.selector;
     }
 
 }
