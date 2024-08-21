@@ -44,7 +44,7 @@ abstract contract MintRichCommonStorage {
     uint256 public totalFees;
     uint256 public claimedFees;
 
-    bytes32 internal DOMAIN_SEPARATOR;
+    bytes32 internal MINT_RICH_DOMAIN_SEPARATOR;
     mapping(address => uint256) public rewardsClaimed;
     
     DoubleEndedQueue.Bytes32Deque internal bank;

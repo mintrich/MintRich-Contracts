@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
+import "./erc404/ERC404.sol";
 import "./MintRichCommonStorage.sol";
 import "../libs/MintRichPriceLib.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -12,9 +13,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
 import 'lib/ERC721A-Upgradeable/contracts/ERC721AUpgradeable.sol';
-import 'lib/ERC721A-Upgradeable/contracts/extensions/ERC721AQueryableUpgradeable.sol';
 
-contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStorage, ReentrancyGuardUpgradeable, ERC721A__IERC721ReceiverUpgradeable {
+contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuardUpgradeable, ERC721A__IERC721ReceiverUpgradeable {
 
     using Address for address payable;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
@@ -36,15 +36,14 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         string calldata symbol_,
         bytes32 packedData,
         bytes calldata information
-    ) external initializerERC721A initializer {
-        __ERC721A_init(name_, symbol_);
-        __ERC721AQueryable_init();
+    ) external initializer {
+        __ERC404_init(name_, symbol_, 18, 10000);
         __ReentrancyGuard_init();
 
         initInfo(packedData, information);
         salePhase = SalePhase.PUBLIC;
         factoryAddress = msg.sender;
-        MINT_RICH_DOMAIN_SEPARATOR = _computeDomainSeparator();
+        MINT_RICH_DOMAIN_SEPARATOR = _computeDomainSeparator404();
     }
 
     function initInfo(bytes32 packedData, bytes calldata information) internal {
@@ -61,10 +60,6 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
             salePhase = SalePhase.CLOSED;
             emit SaleClosed(address(this));
         }
-    }
-
-    function _startTokenId() internal view virtual override returns (uint256) {
-        return 1;
     }
 
     function amountInBank() external view returns (uint256) {
@@ -105,19 +100,19 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
             uint256 withdrawAmount = Math.min(amount, bank.length());
             for (uint256 i = 0; i < withdrawAmount; ++i) {
                 uint256 tokenId = uint256(bank.popBack());
-                _approve(buyer, tokenId);
+                _erc721Approve(buyer, tokenId);
                 transferFrom(address(this), buyer, tokenId);
             }
             mintAmount = amount - withdrawAmount;
         }
 
         if (mintAmount > 0) {
-            _mint(buyer, mintAmount);
+            _mintERC20(buyer, mintAmount * units);
         }
     }
 
     function sell(uint256 amount, bytes calldata tokenIds) external nonReentrant checkSalePhase {
-        require(amount > 0 && amount <= balanceOf(msg.sender), "Sell amount exceeds owned amount");
+        require(amount > 0 && amount <= erc721BalanceOf(msg.sender), "Sell amount exceeds owned amount");
         require(amount * 2 == tokenIds.length, "TokenIds length don't match");
         
         (uint256 prices, uint256 fees) = sellQuota(amount);
@@ -142,6 +137,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
             assembly {
                 tokenId := and(mload(add(tokenIds, add(i, 2))), 0xFFFF)
             }
+            tokenId = ID_ENCODING_PREFIX + tokenId;
             transferFrom(seller, address(this), tokenId);
             bank.pushFront(bytes32(tokenId));
         }
@@ -204,11 +200,10 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         recipient.sendValue(toClaim);
     }
 
-    function tokenURI(uint256 tokenId) public view
-        override(ERC721AUpgradeable, IERC721AUpgradeable)
+    function tokenURI(uint256 tokenId) public view override
         returns (string memory)
     {
-        require(_exists(tokenId), "Token not exist");
+        require(ownerOf(tokenId) != address(0), "Token not exist");
 
         string memory imageURI;
         if (imageType == IMAGE_TYPE_SINGLE) {
@@ -225,9 +220,9 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
                     Base64.encode(
                         abi.encodePacked(
                             '{"name":"',
-                            name(),
+                            name,
                             ' #' ,
-                            Strings.toString(tokenId),
+                            Strings.toString(tokenId - ID_ENCODING_PREFIX),
                             '","image":"',
                             imageURI,
                             '"}'
@@ -261,7 +256,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         );
     }
 
-    function _computeDomainSeparator() internal view returns (bytes32) {
+    function _computeDomainSeparator404() internal view returns (bytes32) {
         return
             keccak256(
                 abi.encode(
