@@ -10,11 +10,11 @@ import { IMetadataRenderer } from "./metadata/IMetadataRenderer.sol";
 
 contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
 
-    address public implementationAddress;
+    mapping(uint256 => address) public implementationTypes;
 
     address public metadataRenderer;
 
-    event MintRichCollectionCreated(address indexed owner, address indexed collectionAddress, bytes32 collectionId, string name, string symbol);
+    event MintRichCollectionCreated(address indexed owner, address indexed collectionAddress, bytes32 collectionId, uint256 collectionType, string name, string symbol);
 
     error InvalidCaller();
 
@@ -23,39 +23,46 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
         _disableInitializers();
     }
 
-    function initialize(address _implementationAddress) initializer external {
+    function initialize(
+        address _implementationERC721A,
+        address _implementationERC404
+    ) initializer external {
         __ERC721_init("MintRich Owner", "MROwner");
         __Ownable_init(_msgSender());
         __UUPSUpgradeable_init();
 
-        require(_implementationAddress != address(0), "_implementationAddress can't be zero address"); 
-        implementationAddress = _implementationAddress;
+        require(_implementationERC721A != address(0), "_implementationERC721A can't be zero address"); 
+        require(_implementationERC404 != address(0), "_implementationERC404 can't be zero address"); 
+
+        implementationTypes[0] = _implementationERC721A;
+        implementationTypes[1] = _implementationERC404;
     }
 
     function createRichCollection(
         bytes32 collectionId,
+        uint256 collectionType,
         string calldata name,
         string calldata symbol,
         bytes32 packedData,
         bytes calldata information
     ) external {
         checkCaller(collectionId);
-        address collection = Clones.cloneDeterministic(implementationAddress, collectionId);
+        address collection = Clones.cloneDeterministic(implementationTypes[collectionType], collectionId);
 
         (bool success, bytes memory returnData) = collection.call(abi.encodeCall(
             MintRichNFTContract.initialize, (name, symbol, packedData, information)));
         if (!success) {
             assembly {
                 revert(add(returnData, 32), mload(returnData))
-            }                
+            }
         }
 
         _safeMint(msg.sender, uint256(uint160(collection)));
-        emit MintRichCollectionCreated(msg.sender, collection, collectionId, name, symbol);
+        emit MintRichCollectionCreated(msg.sender, collection, collectionId, collectionType, name, symbol);
     }
 
-    function predictDeterministicAddress(bytes32 collectionId) external view returns (address) {
-        return Clones.predictDeterministicAddress(implementationAddress, collectionId, address(this));
+    function predictDeterministicAddress(bytes32 collectionId, uint256 collectionType) external view returns (address) {
+        return Clones.predictDeterministicAddress(implementationTypes[collectionType], collectionId, address(this));
     }
 
     function checkCaller(bytes32 salt) internal view {
@@ -80,9 +87,9 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
         metadataRenderer = _metadataRenderer;
     }
 
-    function setImplementationAddress(address _implementationAddress) external onlyOwner {
+    function setImplementationAddress(uint256 collectionType, address _implementationAddress) external onlyOwner {
         require(_implementationAddress != address(0), "_implementationAddress can't be zero address"); 
-        implementationAddress = _implementationAddress;
+        implementationTypes[collectionType] = _implementationAddress;
     }
 
     function burnToken() external {

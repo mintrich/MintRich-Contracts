@@ -42,7 +42,7 @@ contract TestMintRich is Test {
 
         factoryProxy = Upgrades.deployUUPSProxy(
             "MintRichNFTFactoryContract.sol",
-            abi.encodeCall(MintRichNFTFactoryContract.initialize, (beaconProxy))
+            abi.encodeCall(MintRichNFTFactoryContract.initialize, (beaconProxy, beaconProxy))
         );
         console.log("factoryProxy -> %s", factoryProxy);
 
@@ -57,9 +57,9 @@ contract TestMintRich is Test {
         uint256 addr = uint256(uint160(TEST_ADDRESS)) << 96;
         uint256 collectionId = addr + 1;
         assertEq(bytes32(collectionId), bytes32(0x21cB920Bf98041CD33A68F7543114a98e420Da0B000000000000000000000001));
-        factory.createRichCollection(bytes32(collectionId), "Meme NFT", "MMN", bytes32(0), abi.encode("ipfs://xxx/"));
+        factory.createRichCollection(bytes32(collectionId), 0, "Meme NFT", "MMN", bytes32(0), abi.encode("ipfs://xxx/"));
         
-        address collection = factory.predictDeterministicAddress(bytes32(collectionId));
+        address collection = factory.predictDeterministicAddress(bytes32(collectionId), 0);
         MintRichNFTContract mmn = MintRichNFTContract(collection);
         assertEq(mmn.name(), "Meme NFT");
         assertEq(mmn.symbol(), "MMN");
@@ -112,9 +112,9 @@ contract TestMintRich is Test {
         uint256 addr2 = uint256(uint160(TEST2_ADDRESS)) << 96;
         uint256 collectionId2 = addr2 + 10;
         assertEq(bytes32(collectionId2), bytes32(0xb84C357F5F6BB7f36632623105F10cFAD3DA18A600000000000000000000000a));
-        factory.createRichCollection(bytes32(collectionId2), "Meme NFT22", "MMN22", bytes32(uint256(1)), abi.encode("ipfs://yyy/"));
+        factory.createRichCollection(bytes32(collectionId2), 0, "Meme NFT22", "MMN22", bytes32(uint256(1)), abi.encode("ipfs://yyy/"));
         
-        address collection2 = factory.predictDeterministicAddress(bytes32(collectionId2));
+        address collection2 = factory.predictDeterministicAddress(bytes32(collectionId2), 0);
         MintRichNFTContract mmn2 = MintRichNFTContract(collection2);
         assertEq(mmn2.name(), "Meme NFT22");
         assertEq(mmn2.symbol(), "MMN22");
