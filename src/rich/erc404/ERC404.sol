@@ -174,13 +174,6 @@ abstract contract ERC404 is IERC404, Initializable {
 
         return true;
     }
-
-    function _erc721Approve(address spender_, uint256 id_) internal {
-        address erc721Owner = _getOwnerOf(id_);
-        getApproved[id_] = spender_;
-
-        emit ERC721Events.Approval(erc721Owner, spender_, id_);
-    }
     
     function erc721Approve(address spender_, uint256 id_) public virtual {
         // Intention is to approve as ERC-721 token (id).
@@ -213,6 +206,23 @@ abstract contract ERC404 is IERC404, Initializable {
         allowance[msg.sender][spender_] = value_;
 
         emit ERC20Events.Approval(msg.sender, spender_, value_);
+
+        return true;
+    }
+
+    function _erc20Approve(
+        address spender_,
+        uint256 value_
+    ) internal returns (bool) {
+        // Prevent granting 0x0 an ERC-20 allowance.
+        if (spender_ == address(0)) {
+            revert InvalidSpender();
+        }
+
+        // Intention is to approve as ERC-20 token (value).
+        allowance[address(this)][spender_] = value_;
+
+        emit ERC20Events.Approval(address(this), spender_, value_);
 
         return true;
     }

@@ -17,14 +17,6 @@ import 'lib/ERC721A-Upgradeable/contracts/ERC721AUpgradeable.sol';
 contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuardUpgradeable, ERC721A__IERC721ReceiverUpgradeable {
 
     using Address for address payable;
-    using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
-
-    event SaleClosed(address indexed collection);
-
-    event BuyItems(address indexed buyer, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
-    event SellItems(address indexed seller, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
-
-    event ClaimRewards(address indexed recipient, uint256 claimedAmount);
     
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -44,6 +36,8 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         salePhase = SalePhase.PUBLIC;
         factoryAddress = msg.sender;
         MINT_RICH_DOMAIN_SEPARATOR = _computeDomainSeparator404();
+
+        _setERC721TransferExempt(address(this), true);
     }
 
     function initInfo(bytes32 packedData, bytes calldata information) internal {
@@ -63,7 +57,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
     }
 
     function amountInBank() external view returns (uint256) {
-        return bank.length();
+        return bank404;
     }
 
     function owner() external view returns (address) {
@@ -96,13 +90,14 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         address buyer = msg.sender;
         uint256 mintAmount = amount;
 
-        if (!bank.empty()) {
-            uint256 withdrawAmount = Math.min(amount, bank.length());
-            for (uint256 i = 0; i < withdrawAmount; ++i) {
-                uint256 tokenId = uint256(bank.popBack());
-                _erc721Approve(buyer, tokenId);
-                transferFrom(address(this), buyer, tokenId);
-            }
+        if (bank404 > 0) {
+            uint256 withdrawAmount = Math.min(amount, bank404);
+            uint256 amount404 = withdrawAmount * units;
+
+            _erc20Approve(buyer, amount404);
+            transferFrom(address(this), buyer, amount404);
+            
+            bank404 -= withdrawAmount;
             mintAmount = amount - withdrawAmount;
         }
 
@@ -122,25 +117,15 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         uint256 preSupply = activeSupply;
         activeSupply -= amount;
 
-        sellNFTs(tokenIds);
+        sellNFTs(amount);
         emit SellItems(msg.sender, amount, prices, fees, preSupply, activeSupply);
 
         payable(msg.sender).sendValue(receivedPrices);
     }
 
-    function sellNFTs(bytes memory tokenIds) internal {
-        address seller = msg.sender;
-        uint256 length = tokenIds.length;
-
-        for (uint256 i = 0; i < length; i = i + 2) {
-            uint256 tokenId;
-            assembly {
-                tokenId := and(mload(add(tokenIds, add(i, 2))), 0xFFFF)
-            }
-            tokenId = ID_ENCODING_PREFIX + tokenId;
-            transferFrom(seller, address(this), tokenId);
-            bank.pushFront(bytes32(tokenId));
-        }
+    function sellNFTs(uint256 amount) internal {
+        transfer(address(this), amount * units);
+        bank404 += amount;
     }
 
     function buyQuota(uint256 amount) public view returns (uint256 prices, uint256 fees) {
@@ -272,11 +257,11 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
     }
 
     function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4) {
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external pure returns (bytes4) {
         return ERC721A__IERC721ReceiverUpgradeable.onERC721Received.selector;
     }
 

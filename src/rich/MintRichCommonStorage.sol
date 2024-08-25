@@ -5,6 +5,13 @@ import "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 
 abstract contract MintRichCommonStorage {
 
+    event SaleClosed(address indexed collection);
+
+    event BuyItems(address indexed buyer, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
+    event SellItems(address indexed seller, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
+
+    event ClaimRewards(address indexed recipient, uint256 claimedAmount);
+
     uint256 public constant MAX_SUPPLY = 10000;
     
     uint256 public constant BASIS_POINTS = 10000;
@@ -48,5 +55,6 @@ abstract contract MintRichCommonStorage {
     mapping(address => uint256) public rewardsClaimed;
     
     DoubleEndedQueue.Bytes32Deque internal bank;
+    uint256 internal bank404;
 
 }

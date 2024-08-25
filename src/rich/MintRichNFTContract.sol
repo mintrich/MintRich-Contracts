@@ -18,13 +18,6 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
 
     using Address for address payable;
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
-
-    event SaleClosed(address indexed collection);
-
-    event BuyItems(address indexed buyer, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
-    event SellItems(address indexed seller, uint256 amount, uint256 prices, uint256 fees, uint256 preSupply, uint256 postSupply);
-
-    event ClaimRewards(address indexed recipient, uint256 claimedAmount);
     
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -277,11 +270,11 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
     }
 
     function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4) {
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external pure returns (bytes4) {
         return ERC721A__IERC721ReceiverUpgradeable.onERC721Received.selector;
     }
 
