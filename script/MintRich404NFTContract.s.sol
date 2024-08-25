@@ -21,11 +21,11 @@ contract MintRich404NFTContractScript is Script {
         console.log("implAddressV1 -> %s", implAddressV1);
 
         bytes memory data = abi.encodeCall(MintRichNFTContract.initialize, 
-            ("MintRichBeaconProxy", "MRBP", bytes32(0), abi.encode("")));
+            ("MintRich404BeaconProxy", "MRBP404", bytes32(0), abi.encode("")));
         address beaconProxy = Upgrades.deployBeaconProxy(beacon, data);
         console.log("beaconProxy -> %s", beaconProxy);
 
-        // Upgrades.upgradeBeacon(0x6826E8EF4a68439ac16e7EdC1e5608F419DC35Df, "MintRich404NFTContract.sol");
+        // Upgrades.upgradeBeacon(0x150dc2fC150edB54ACcA931B464345722E1EF78B, "MintRich404NFTContract.sol");
 
         vm.stopBroadcast();
     }

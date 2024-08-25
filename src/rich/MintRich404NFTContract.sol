@@ -106,9 +106,8 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         }
     }
 
-    function sell(uint256 amount, bytes calldata tokenIds) external nonReentrant checkSalePhase {
-        require(amount > 0 && amount <= erc721BalanceOf(msg.sender), "Sell amount exceeds owned amount");
-        require(amount * 2 == tokenIds.length, "TokenIds length don't match");
+    function sell(uint256 amount) external nonReentrant checkSalePhase {
+        require(amount > 0 && amount * units <= erc20BalanceOf(msg.sender), "Sell amount exceeds owned amount");
         
         (uint256 prices, uint256 fees) = sellQuota(amount);
         uint256 receivedPrices = prices - fees;
