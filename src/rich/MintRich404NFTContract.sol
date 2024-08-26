@@ -29,7 +29,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         bytes32 packedData,
         bytes calldata information
     ) external initializer {
-        __ERC404_init(name_, symbol_, 18, 10000);
+        __ERC404_init(name_, symbol_, 18, 1000000);
         __ReentrancyGuard_init();
 
         initInfo(packedData, information);
