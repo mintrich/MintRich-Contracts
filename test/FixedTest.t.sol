@@ -9,7 +9,7 @@ contract FixedTest is Test {
 
     int256 constant iUNIT = int256(uUNIT);
     
-    uint256 constant CONST_A = 5e14;
+    uint256 constant CONST_A = 1e15;
     uint256 constant CONST_B = 5000;
     uint256 constant CONST_C = 3e6;
 
@@ -30,8 +30,9 @@ contract FixedTest is Test {
     // }
 
     function testTokenPrice() public view {
-        uint256 b0 = poolBalance(5000);
-        console.logUint(b0);
+        uint256 b0 = poolBalance(10000);
+        uint256 b1 = poolBalance(0);
+        console.logUint(b0 - b1);
     //     uint256 b1 = poolBalance(1);
     //     console.logUint(b1);
     //     uint256 b2 = poolBalance(2);

@@ -5,7 +5,7 @@ import { UD60x18, ud, uUNIT, mul, sqrt} from "prb-math/UD60x18.sol";
 
 library MintRichPriceLib {
 
-    uint256 constant CONST_A = 5e14;
+    uint256 constant CONST_A = 1e15;
     uint256 constant CONST_B = 5000;
     uint256 constant CONST_C = 3e6;
 

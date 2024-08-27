@@ -10,11 +10,11 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
-import 'lib/ERC721A-Upgradeable/contracts/ERC721AUpgradeable.sol';
 
-contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuardUpgradeable, ERC721A__IERC721ReceiverUpgradeable {
+contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuardUpgradeable, IERC721Receiver {
 
     using Address for address payable;
     
@@ -64,7 +64,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         if (salePhase == SalePhase.CLOSED) {
             return address(0);
         }
-        return IERC721AUpgradeable(factoryAddress).ownerOf(uint256(uint160(address(this))));
+        return IERC721(factoryAddress).ownerOf(uint256(uint160(address(this))));
     }
 
     function buy(uint256 amount) external payable nonReentrant checkSalePhase {
@@ -162,6 +162,8 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
             WETH9));
 
         Address.functionCall(factoryAddress, abi.encodeWithSelector(FACTORY_BURN_SELECTOR));
+        
+        _setERC721TransferExempt(address(this), false);
     }
 
     function claimRewards(
@@ -261,7 +263,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         uint256,
         bytes calldata
     ) external pure returns (bytes4) {
-        return ERC721A__IERC721ReceiverUpgradeable.onERC721Received.selector;
+        return IERC721Receiver.onERC721Received.selector;
     }
 
 }
