@@ -47,6 +47,7 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
         bytes calldata information
     ) external {
         checkCaller(collectionId);
+        require(implementationTypes[collectionType] != address(0), "Invalid collectionType");
         address collection = Clones.cloneDeterministic(implementationTypes[collectionType], collectionId);
 
         (bool success, bytes memory returnData) = collection.call(abi.encodeCall(

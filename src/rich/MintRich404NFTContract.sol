@@ -92,10 +92,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
 
         if (bank404 > 0) {
             uint256 withdrawAmount = Math.min(amount, bank404);
-            uint256 amount404 = withdrawAmount * units;
-
-            _erc20Approve(buyer, amount404);
-            transferFrom(address(this), buyer, amount404);
+            _transferERC20WithERC721(address(this), buyer, withdrawAmount * units);
             
             bank404 -= withdrawAmount;
             mintAmount = amount - withdrawAmount;
