@@ -10,8 +10,8 @@ contract FixedTest is Test {
     int256 constant iUNIT = int256(uUNIT);
     
     uint256 constant CONST_A = 1e15;
-    uint256 constant CONST_B = 5000;
-    uint256 constant CONST_C = 3e6;
+    uint256 constant CONST_B = 4000;
+    uint256 constant CONST_C = 4e6;
 
     // function testFixed() public view {
     //     for (uint256 i = 1; i <= 10; i++) {
@@ -30,7 +30,7 @@ contract FixedTest is Test {
     // }
 
     function testTokenPrice() public view {
-        uint256 b0 = poolBalance(10000);
+        uint256 b0 = poolBalance(8000);
         uint256 b1 = poolBalance(0);
         console.logUint(b0 - b1);
     //     uint256 b1 = poolBalance(1);
@@ -60,7 +60,7 @@ contract FixedTest is Test {
     }
 
     // function testPriceSeq() public view {
-    //     for (uint256 s = 1;s <= 10000;s++) {
+    //     for (uint256 s = 1;s <= 8000;s++) {
     //          uint256 price = poolBalance(s) - poolBalance(s - 1);
     //          console.logUint(price);
     //     }
@@ -70,6 +70,26 @@ contract FixedTest is Test {
         uint256 sb = supply < CONST_B ? CONST_B - supply : supply - CONST_B;
         uint256 sqrtV = ud((sb * sb + CONST_C) * uUNIT).sqrt().unwrap();
         balance = mul(ud(sqrtV + supply * uUNIT), ud(CONST_A)).unwrap();
+    }
+
+    function computeAddress(address token0, address token1, uint24 fee) internal pure returns (address pool) {
+        require(token0 < token1);
+        pool = address(uint160(uint256(
+                keccak256(
+                    abi.encodePacked(
+                        hex'ff',
+                        0xB6C8B971650d96BD58c9Ba16DcFe685Bc1472e82,
+                        keccak256(abi.encode(token0, token1, fee)),
+                        bytes32(0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54)
+                    )
+                )
+        )));
+    }
+
+    function testPoolAddress() public view {
+        address pool = computeAddress(0x4200000000000000000000000000000000000006,
+            0xF18058b45CaCEAB294d2ACb77178D2e1AEc68B73, 500);
+        console.log("pool -> %s", pool);
     }
 
 }

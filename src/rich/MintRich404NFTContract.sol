@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "./erc404/ERC404.sol";
 import "./MintRichCommonStorage.sol";
-import "../libs/MintRichPriceLib.sol";
+import "../libs/MintRich404PriceLib.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
@@ -14,9 +14,12 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
+/// @custom:oz-upgrades-from MintRich404NFTContract
 contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuardUpgradeable, IERC721Receiver {
 
     using Address for address payable;
+
+    error PoolNotFound();
     
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -50,7 +53,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         require(salePhase == SalePhase.PUBLIC, "Public sale ended");
         _;
 
-        if (activeSupply == MAX_SUPPLY) {
+        if (activeSupply == MAX_SUPPLY_404) {
             salePhase = SalePhase.CLOSED;
             emit SaleClosed(address(this));
         }
@@ -68,7 +71,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
     }
 
     function buy(uint256 amount) external payable nonReentrant checkSalePhase {
-        require(amount > 0 && activeSupply + amount <= MAX_SUPPLY, "Buy amount exceeds MAX_SUPPLY limit");
+        require(amount > 0 && activeSupply + amount <= MAX_SUPPLY_404, "Buy amount exceeds MAX_SUPPLY_404 limit");
 
         (uint256 prices, uint256 fees) = buyQuota(amount);
         uint256 totalPrices = prices + fees;
@@ -125,17 +128,17 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
     }
 
     function buyQuota(uint256 amount) public view returns (uint256 prices, uint256 fees) {
-        prices = MintRichPriceLib.totalTokenPrices(activeSupply, amount);
+        prices = MintRich404PriceLib.totalTokenPrices(activeSupply, amount);
         fees = (prices * PROTOCOL_FEE) / BASIS_POINTS;
     }
     
     function sellQuota(uint256 amount) public view returns (uint256 prices, uint256 fees) {
-        prices = MintRichPriceLib.totalTokenPrices(activeSupply - amount, amount);
+        prices = MintRich404PriceLib.totalTokenPrices(activeSupply - amount, amount);
         fees = (prices * PROTOCOL_FEE) / BASIS_POINTS;
     }
 
     function saleBalance() public view returns (uint256 balance) {
-        balance = MintRichPriceLib.totalTokenPrices(0, activeSupply);
+        balance = MintRich404PriceLib.totalTokenPrices(0, activeSupply);
     }
 
     function processSaleClosed() external nonReentrant {
@@ -146,21 +149,100 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         uint256 share = (totalBalance * MINT_RICH_SHARE_POINTS) / BASIS_POINTS;
         MINT_RICH_RECIPIENT.sendValue(share);
 
-        uint256 bids = (totalBalance * MINT_RICH_BIDS_POINTS) / BASIS_POINTS;
-        Address.functionCallWithValue(WETH9, abi.encodeWithSelector(WETH9_DEPOSIT_SELECTOR), bids);
-        IERC20(WETH9).approve(MINTSWAP_NFT_MARKETPLACE, bids);
+        uint256 liquidityETH = (totalBalance * MINT_RICH_BIDS_POINTS) / BASIS_POINTS;
+        uint256 liquidityERC20 = 2000 * units;
+        _mintERC20(address(this), liquidityERC20);
 
-        Address.functionCall(MINTSWAP_NFT_MARKETPLACE, abi.encodeWithSelector(
-            MINTSWAP_BIDS_SELECTOR, 
-            address(this), 
-            uint64(MAX_SUPPLY), 
-            uint128(bids / MAX_SUPPLY), 
-            MINTSWAP_BIDS_EXPIRATION_TIME, 
-            WETH9));
+        (address token0, address token1) = address(this) < WETH9 ? (address(this), WETH9) : (WETH9, address(this));
+        (uint24 fee, address pool) = swapPool(token0, token1);
+        if (pool == address(0)) {
+            revert PoolNotFound();
+        } else {
+            _setERC721TransferExempt(pool, true);
+            IERC20(address(this)).approve(MINTSWAP_DEX_MANAGER, liquidityERC20);
+
+            uint256 liquidityETHMin = 7.1 ether;
+            uint256 liquidityERC20Min = 1990 * units;
+            bool isToken0WETH9 = token0 == WETH9;
+
+            MintParams memory params = MintParams({
+                token0: token0,
+                token1: token1,
+                fee: fee,
+                tickLower: -887220,
+                tickUpper: 887220,
+                amount0Desired: isToken0WETH9 ? liquidityETH : liquidityERC20,
+                amount1Desired: isToken0WETH9 ? liquidityERC20 : liquidityETH,
+                amount0Min: isToken0WETH9 ? liquidityETHMin : liquidityERC20Min,
+                amount1Min: isToken0WETH9 ? liquidityERC20Min : liquidityETHMin,
+                recipient: MINT_RICH_RECIPIENT,
+                deadline: block.timestamp
+            });
+
+            Address.functionCallWithValue(MINTSWAP_DEX_MANAGER, abi.encodeWithSelector(
+                MINTSWAP_DEX_MINT_SELECTOR,
+                params
+            ), liquidityETH);
+            Address.functionCall(MINTSWAP_DEX_MANAGER, abi.encodeWithSelector(
+                MINTSWAP_DEX_REFUNDETH_SELECTOR
+            ));
+        }
 
         Address.functionCall(factoryAddress, abi.encodeWithSelector(FACTORY_BURN_SELECTOR));
-        
-        _setERC721TransferExempt(address(this), false);
+    }
+
+    function swapPool(address token0, address token1) internal returns (uint24 fee, address pool) {
+        fee = availablePool(token0, token1);
+        if (fee == 0) {
+            return (0, address(0));
+        }
+
+        bytes memory newPool = Address.functionCall(MINTSWAP_DEX_MANAGER,
+            abi.encodeWithSelector(
+                MINTSWAP_DEX_CREATEPOOL_SELECTOR,
+                token0, 
+                token1,
+                fee,
+                token0 == WETH9 ? 1322250415630003948164993641092298 : 4747286641914853202563655
+            ));
+
+        pool = abi.decode(newPool, (address));
+        return (fee, pool);
+    }
+
+    function availablePool(address token0, address token1) internal view returns(uint24 fee) {
+        address pool;
+
+        pool = computeAddress(token0, token1, 500);
+        if (pool.code.length == 0) {
+            return 500;
+        }
+
+        pool = computeAddress(token0, token1, 3000);
+        if (pool.code.length == 0) {
+            return 3000;
+        }
+
+        pool = computeAddress(token0, token1, 10000);
+        if (pool.code.length == 0) {
+            return 10000;
+        }
+
+        return 0;
+    }
+
+    function computeAddress(address token0, address token1, uint24 fee) internal pure returns (address pool) {
+        require(token0 < token1);
+        pool = address(uint160(uint256(
+                keccak256(
+                    abi.encodePacked(
+                        hex'ff',
+                        MINTSWAP_DEX_FACTORY,
+                        keccak256(abi.encode(token0, token1, fee)),
+                        POOL_INIT_CODE_HASH
+                    )
+                )
+        )));
     }
 
     function claimRewards(

@@ -13,6 +13,7 @@ abstract contract MintRichCommonStorage {
     event ClaimRewards(address indexed recipient, uint256 claimedAmount);
 
     uint256 public constant MAX_SUPPLY = 10000;
+    uint256 public constant MAX_SUPPLY_404 = 8000;
     
     uint256 public constant BASIS_POINTS = 10000;
     uint256 public constant PROTOCOL_FEE = 30;
@@ -26,12 +27,21 @@ abstract contract MintRichCommonStorage {
 
     address internal constant WETH9 = 0x4200000000000000000000000000000000000006;
     address internal constant MINTSWAP_NFT_MARKETPLACE = 0xb71663651BdA299a0891deFFB5c2286943e076B4;
+    
+    address internal constant MINTSWAP_DEX_MANAGER = 0xf4c7208b413a392a792F18b84aD9ba0Df460a6d1;
+    address internal constant MINTSWAP_DEX_FACTORY = 0xB6C8B971650d96BD58c9Ba16DcFe685Bc1472e82;
 
     bytes4 internal constant WETH9_DEPOSIT_SELECTOR = bytes4(keccak256("deposit()"));
     bytes4 internal constant MINTSWAP_BIDS_SELECTOR = bytes4(keccak256("createOrUpdateCollectionBid(address,uint64,uint128,uint64,address)"));
     bytes4 internal constant FACTORY_BURN_SELECTOR = bytes4(keccak256("burnToken()"));
 
+    bytes4 internal constant MINTSWAP_DEX_GETPOOL_SELECTOR = 0x1698ee82;
+    bytes4 internal constant MINTSWAP_DEX_CREATEPOOL_SELECTOR = 0x13ead562;
+    bytes4 internal constant MINTSWAP_DEX_MINT_SELECTOR = 0x88316456;
+    bytes4 internal constant MINTSWAP_DEX_REFUNDETH_SELECTOR = 0x12210e8a;
+
     uint64 internal constant MINTSWAP_BIDS_EXPIRATION_TIME = 2035756800;
+    bytes32 internal constant POOL_INIT_CODE_HASH = 0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54;
 
     uint8 internal constant IMAGE_TYPE_SINGLE = 0;
     uint8 internal constant IMAGE_TYPE_MULIT = 1;
@@ -44,6 +54,20 @@ abstract contract MintRichCommonStorage {
         CLOSED 
     }
     
+    struct MintParams {
+        address token0;
+        address token1;
+        uint24 fee;
+        int24 tickLower;
+        int24 tickUpper;
+        uint256 amount0Desired;
+        uint256 amount1Desired;
+        uint256 amount0Min;
+        uint256 amount1Min;
+        address recipient;
+        uint256 deadline;
+    }
+
     SalePhase public salePhase;
     address public factoryAddress;
     uint256 public activeSupply;
