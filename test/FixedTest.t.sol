@@ -59,12 +59,12 @@ contract FixedTest is Test {
     //     console.logUint(p3);
     }
 
-    // function testPriceSeq() public view {
-    //     for (uint256 s = 1;s <= 8000;s++) {
-    //          uint256 price = poolBalance(s) - poolBalance(s - 1);
-    //          console.logUint(price);
-    //     }
-    // }
+    function testPriceSeq() public view {
+        for (uint256 s = 1;s <= 1;s++) {
+             uint256 price = poolBalance(s) - poolBalance(s - 1);
+             console.logUint(price);
+        }
+    }
 
     function poolBalance(uint256 supply) internal pure returns (uint256 balance){
         uint256 sb = supply < CONST_B ? CONST_B - supply : supply - CONST_B;
@@ -87,8 +87,8 @@ contract FixedTest is Test {
     }
 
     function testPoolAddress() public view {
-        address pool = computeAddress(0x4200000000000000000000000000000000000006,
-            0xF18058b45CaCEAB294d2ACb77178D2e1AEc68B73, 500);
+        address pool = computeAddress(0x4200000000000000000000000000000000000006, 
+            0x5a2A0a4227D4D2528b7edB4B0D88765E78524Aba,  10000);
         console.log("pool -> %s", pool);
     }
 

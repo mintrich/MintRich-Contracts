@@ -41,6 +41,8 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         MINT_RICH_DOMAIN_SEPARATOR = _computeDomainSeparator404();
 
         _setERC721TransferExempt(address(this), true);
+        _setERC721TransferExempt(MINTSWAP_DEX_MANAGER, true);
+        _setERC721TransferExempt(MINT_RICH_RECIPIENT, true);
     }
 
     function initInfo(bytes32 packedData, bytes calldata information) internal {
@@ -161,8 +163,8 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
             _setERC721TransferExempt(pool, true);
             IERC20(address(this)).approve(MINTSWAP_DEX_MANAGER, liquidityERC20);
 
-            uint256 liquidityETHMin = 7.1 ether;
-            uint256 liquidityERC20Min = 1990 * units;
+            uint256 liquidityETHMin = 7 ether;
+            uint256 liquidityERC20Min = 1800 * units;
             bool isToken0WETH9 = token0 == WETH9;
 
             MintParams memory params = MintParams({
@@ -203,7 +205,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
                 token0, 
                 token1,
                 fee,
-                token0 == WETH9 ? 1322250415630003948164993641092298 : 4747286641914853202563655
+                token0 == WETH9 ? 1320469375237739031095775527068884 : 4753689750855860255612637
             ));
 
         pool = abi.decode(newPool, (address));
@@ -344,5 +346,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
     ) external pure returns (bytes4) {
         return IERC721Receiver.onERC721Received.selector;
     }
+
+    receive() external payable {}
 
 }
