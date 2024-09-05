@@ -13,19 +13,19 @@ contract MintRich404NFTContractScript is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        // address owner = vm.envAddress("OWNER");
+        address owner = vm.envAddress("OWNER");
 
-        // address beacon = Upgrades.deployBeacon("MintRich404NFTContract.sol", owner);
-        // address implAddressV1 = IBeacon(beacon).implementation();
-        // console.log("beacon -> %s", beacon);
-        // console.log("implAddressV1 -> %s", implAddressV1);
+        address beacon = Upgrades.deployBeacon("MintRich404NFTContract.sol", owner);
+        address implAddressV1 = IBeacon(beacon).implementation();
+        console.log("beacon -> %s", beacon);
+        console.log("implAddressV1 -> %s", implAddressV1);
 
-        // bytes memory data = abi.encodeCall(MintRichNFTContract.initialize, 
-        //     ("MintRich404BeaconProxy", "MRBP404", bytes32(0), abi.encode("")));
-        // address beaconProxy = Upgrades.deployBeaconProxy(beacon, data);
-        // console.log("beaconProxy -> %s", beaconProxy);
+        bytes memory data = abi.encodeCall(MintRichNFTContract.initialize, 
+            ("MintRich404BeaconProxy", "MRBP404", bytes32(0), abi.encode("")));
+        address beaconProxy = Upgrades.deployBeaconProxy(beacon, data);
+        console.log("beaconProxy -> %s", beaconProxy);
 
-        Upgrades.upgradeBeacon(0x150dc2fC150edB54ACcA931B464345722E1EF78B, "MintRich404NFTContract.sol");
+        // Upgrades.upgradeBeacon(0x150dc2fC150edB54ACcA931B464345722E1EF78B, "MintRich404NFTContract.sol");
 
         vm.stopBroadcast();
     }
