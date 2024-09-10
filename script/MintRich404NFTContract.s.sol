@@ -26,6 +26,7 @@ contract MintRich404NFTContractScript is Script {
         console.log("beaconProxy -> %s", beaconProxy);
 
         // Upgrades.upgradeBeacon(0x150dc2fC150edB54ACcA931B464345722E1EF78B, "MintRich404NFTContract.sol");
+        // Upgrades.upgradeBeacon(0x9d52aB21c1E9ec510B65fd274176Db5eD631Da80, "MintRich404NFTContract.sol");
 
         vm.stopBroadcast();
     }
