@@ -276,7 +276,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
             imageURI = baseURI;
         }
         if (imageType == IMAGE_TYPE_MULIT) {
-            imageURI = string.concat(baseURI, Strings.toString(tokenId), ".png");
+            imageURI = string.concat(baseURI, Strings.toString(tokenId - ID_ENCODING_PREFIX), ".png");
         }
 
         return 
