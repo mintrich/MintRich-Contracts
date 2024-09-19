@@ -155,6 +155,7 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
     }
 
     function processSaleClosed() external nonReentrant {
+        require(false, "Process disabled for ERC721A");
         require(msg.sender == MINT_RICH_ADMIN, "Only admin can process");
         require(salePhase == SalePhase.CLOSED, "Sale not closed");
 
