@@ -28,8 +28,8 @@ abstract contract MintRichCommonStorage {
     address internal constant WETH9 = 0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14;
     address internal constant MINTSWAP_NFT_MARKETPLACE = 0xb71663651BdA299a0891deFFB5c2286943e076B4;
     
-    address internal constant MINTSWAP_DEX_MANAGER = 0xC36442b4a4522E871399CD717aBDD847Ab11FE88;
-    address internal constant MINTSWAP_DEX_FACTORY = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
+    address internal constant MINTSWAP_DEX_MANAGER = 0xd3CC51Ad2F56b5fe32E52318e06a4D96b5343b24;
+    address internal constant MINTSWAP_DEX_FACTORY = 0x1ED2540E575587dcbDB089be1a705B6cB7F1f1e1;
 
     bytes4 internal constant WETH9_DEPOSIT_SELECTOR = bytes4(keccak256("deposit()"));
     bytes4 internal constant MINTSWAP_BIDS_SELECTOR = bytes4(keccak256("createOrUpdateCollectionBid(address,uint64,uint128,uint64,address)"));
