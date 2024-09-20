@@ -16,7 +16,7 @@ abstract contract MintRichCommonStorage {
     uint256 public constant MAX_SUPPLY_404 = 8000;
     
     uint256 public constant BASIS_POINTS = 10000;
-    uint256 public constant PROTOCOL_FEE = 30;
+    uint256 public constant PROTOCOL_FEE = 100;
     uint256 public constant MINT_RICH_SHARE_POINTS = 1000;
     uint256 public constant MINT_RICH_BIDS_POINTS = 9000;
 
