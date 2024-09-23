@@ -14,7 +14,6 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
-/// @custom:oz-upgrades-from MintRich404NFTContract
 contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuardUpgradeable, IERC721Receiver {
 
     using Address for address payable;
