@@ -248,6 +248,7 @@ abstract contract ERC404 is IERC404, Initializable {
         address to_,
         uint256 valueOrId_
     ) public virtual returns (bool) {
+        require(false, "Forbidden");
         if (_isValidTokenId(valueOrId_)) {
             erc721TransferFrom(from_, to_, valueOrId_);
         } else {
@@ -265,6 +266,7 @@ abstract contract ERC404 is IERC404, Initializable {
         address to_,
         uint256 id_
     ) public virtual {
+        require(false, "Forbidden");
         // Prevent transferring tokens from 0x0.
         if (from_ == address(0)) {
             revert InvalidSender();
@@ -305,6 +307,7 @@ abstract contract ERC404 is IERC404, Initializable {
         address to_,
         uint256 value_
     ) public virtual returns (bool) {
+        require(false, "Forbidden");
         // Prevent transferring tokens from 0x0.
         if (from_ == address(0)) {
             revert InvalidSender();
@@ -336,6 +339,7 @@ abstract contract ERC404 is IERC404, Initializable {
         address to_,
         uint256 value_
     ) public virtual returns (bool) {
+        require(false, "Forbidden");
         // Prevent burning tokens to 0x0.
         if (to_ == address(0)) {
             revert InvalidRecipient();
@@ -354,6 +358,7 @@ abstract contract ERC404 is IERC404, Initializable {
         address to_,
         uint256 id_
     ) public virtual {
+        require(false, "Forbidden");
         safeTransferFrom(from_, to_, id_, "");
     }
 
@@ -366,6 +371,7 @@ abstract contract ERC404 is IERC404, Initializable {
         uint256 id_,
         bytes memory data_
     ) public virtual {
+        require(false, "Forbidden");
         if (!_isValidTokenId(id_)) {
             revert InvalidTokenId();
         }
