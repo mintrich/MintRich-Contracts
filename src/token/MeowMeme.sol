@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 contract MeowMeme is Initializable, ERC20Upgradeable, OwnableUpgradeable, ERC20PermitUpgradeable, UUPSUpgradeable {
     
-    uint256 constant public MAX_SUPPLY = 10000000000;
+    uint256 constant public MAX_SUPPLY = 10 ** 18 * 10000000000;
     uint256 public minted;
 
     struct Batch {
