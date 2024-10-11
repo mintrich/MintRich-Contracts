@@ -14,6 +14,7 @@ import 'lib/ERC721A-Upgradeable/contracts/IERC721AUpgradeable.sol';
 import 'lib/ERC721A-Upgradeable/contracts/ERC721AUpgradeable.sol';
 import 'lib/ERC721A-Upgradeable/contracts/extensions/ERC721AQueryableUpgradeable.sol';
 
+/// @custom:oz-upgrades-from MintRichNFTContract
 contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStorage, ReentrancyGuardUpgradeable, ERC721A__IERC721ReceiverUpgradeable {
 
     using Address for address payable;
@@ -155,15 +156,10 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
     }
 
     function processSaleClosed() external nonReentrant {
-        require(false, "Process disabled for ERC721A");
         require(msg.sender == MINT_RICH_ADMIN, "Only admin can process");
         require(salePhase == SalePhase.CLOSED, "Sale not closed");
 
-        uint256 totalBalance = saleBalance();
-        uint256 share = (totalBalance * MINT_RICH_SHARE_POINTS) / BASIS_POINTS;
-        MINT_RICH_RECIPIENT.sendValue(share);
-
-        uint256 bids = (totalBalance * MINT_RICH_BIDS_POINTS) / BASIS_POINTS;
+        uint256 bids = saleBalance();
         Address.functionCallWithValue(WETH9, abi.encodeWithSelector(WETH9_DEPOSIT_SELECTOR), bids);
         IERC20(WETH9).approve(MINTSWAP_NFT_MARKETPLACE, bids);
 

@@ -147,11 +147,6 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
         require(msg.sender == MINT_RICH_ADMIN, "Only admin can process");
         require(salePhase == SalePhase.CLOSED, "Sale not closed");
 
-        // uint256 totalBalance = saleBalance();
-        // uint256 share = (totalBalance * MINT_RICH_SHARE_POINTS) / BASIS_POINTS;
-        // MINT_RICH_RECIPIENT.sendValue(share);
-
-        // uint256 liquidityETH = (totalBalance * MINT_RICH_BIDS_POINTS) / BASIS_POINTS;
         uint256 liquidityETH = saleBalance();
         uint256 liquidityERC20 = 2000 * units;
         _mintERC20(address(this), liquidityERC20);
@@ -164,7 +159,7 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
             _setERC721TransferExempt(pool, true);
             IERC20(address(this)).approve(MINTSWAP_DEX_MANAGER, liquidityERC20);
 
-            uint256 liquidityETHMin = 7 ether;
+            uint256 liquidityETHMin = 7.2 ether;
             uint256 liquidityERC20Min = 1800 * units;
             bool isToken0WETH9 = token0 == WETH9;
 
@@ -206,7 +201,6 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
                 token0, 
                 token1,
                 fee,
-                // token0 == WETH9 ? 1320469375237739031095775527068884 : 4753689750855860255612637
                 token0 == WETH9 ? 1252707241875239555715489657828855 : 5010828967500958623728276
             ));
 

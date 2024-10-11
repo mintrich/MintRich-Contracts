@@ -25,13 +25,8 @@ contract MintRich404NFTContractScript is Script {
         // address beaconProxy = Upgrades.deployBeaconProxy(beacon, data);
         // console.log("beaconProxy -> %s", beaconProxy);
 
-        // Upgrades.upgradeBeacon(0x150dc2fC150edB54ACcA931B464345722E1EF78B, "MintRich404NFTContract.sol");
+        Upgrades.upgradeBeacon(0x150dc2fC150edB54ACcA931B464345722E1EF78B, "MintRich404NFTContract.sol");
         // Upgrades.upgradeBeacon(0x9d52aB21c1E9ec510B65fd274176Db5eD631Da80, "MintRich404NFTContract.sol");
-        
-        // eth sepolia
-        // Upgrades.upgradeBeacon(0x1371CbA1CA0a24d10b7c9C8D5Af561c9C9Ee4566, "MintRich404NFTContract.sol");
-        // eth mainnet
-        Upgrades.upgradeBeacon(0x66a70CB01dE32048833A14eB65079564699F342C, "MintRich404NFTContract.sol");
         
         vm.stopBroadcast();
     }
