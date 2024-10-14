@@ -81,4 +81,6 @@ abstract contract MintRichCommonStorage {
     DoubleEndedQueue.Bytes32Deque internal bank;
     uint256 internal bank404;
 
+    address internal constant ROUTER_ADDRESS = 0xfeEDbfC8DB467ABfD7f794b9d34094F65DD0CF6c;
+
 }
