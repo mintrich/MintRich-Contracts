@@ -185,7 +185,10 @@ contract MintRichNFTContract is ERC721AQueryableUpgradeable, MintRichCommonStora
         
         address payable recipient = payable(claimer);
         require(_verfySigner(recipient, totalRewards, _v, _r, _s) == REWARDS_SIGNER, "Invalid signer");
-        require(totalRewards > rewardsClaimed[recipient], "Nothing to claim");
+        require(totalRewards >= rewardsClaimed[recipient], "Nothing to claim");
+        if (totalRewards == rewardsClaimed[recipient]) {
+            return;
+        }
 
         uint256 toClaim = totalRewards - rewardsClaimed[recipient];
         require(toClaim <= totalFees - claimedFees, "Invalid claim amount");
