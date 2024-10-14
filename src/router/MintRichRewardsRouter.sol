@@ -5,12 +5,13 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
+/// @custom:oz-upgrades-from MintRichRewardsRouter
 contract MintRichRewardsRouter is UUPSUpgradeable, OwnableUpgradeable {
 
     bytes4 internal constant REWARDS_CLAIMED_SELECTOR = 
         bytes4(keccak256("rewardsClaimed(address)"));
     bytes4 internal constant CLAIM_REWARDS_SELECTOR = 
-        bytes4(keccak256("claimRewards(address, uint256, uint8, bytes32, bytes32)"));
+        bytes4(keccak256("claimRewards(address,uint256,uint8,bytes32,bytes32)"));
 
     struct ClaimInfo {
         uint256 totalRewards;
