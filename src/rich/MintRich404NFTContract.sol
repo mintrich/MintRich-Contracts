@@ -254,8 +254,8 @@ contract MintRich404NFTContract is ERC404, MintRichCommonStorage, ReentrancyGuar
 
         address payable recipient = payable(claimer);
         require(_verfySigner(recipient, totalRewards, _v, _r, _s) == REWARDS_SIGNER, "Invalid signer");
-        require(totalRewards >= rewardsClaimed[recipient], "Nothing to claim");
-        if (totalRewards == rewardsClaimed[recipient]) {
+
+        if (totalRewards <= rewardsClaimed[recipient]) {
             return;
         }
 

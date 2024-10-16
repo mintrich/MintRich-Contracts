@@ -18,6 +18,7 @@ contract MintRichRewardsRouterScript is Script {
         );
         console.log("routerProxy -> %s", routerProxy);
 
+        // mint-test
         // Upgrades.upgradeProxy(
         //     0xfeEDbfC8DB467ABfD7f794b9d34094F65DD0CF6c,
         //     "MintRichRewardsRouter.sol",
