@@ -9,21 +9,22 @@ contract FixedTest is Test {
 
     int256 constant iUNIT = int256(uUNIT);
     
-    uint256 constant CONST_A = 1e15;
-    uint256 constant CONST_B = 4000;
-    uint256 constant CONST_C = 4e6;
+    uint256 constant CONST_A = 1e10;
+    uint256 constant CONST_B = 4e8;
+    uint256 constant CONST_C = 2e16;
 
     function testTokenPrice() public view {
-        uint256 b0 = poolBalance(8000);
+        uint256 b0 = poolBalance(8e8);
         uint256 b1 = poolBalance(0);
         console.logUint(b0 - b1);
     }
 
     function testPriceSeq() public view {
-        for (uint256 s = 1;s <= 8000;s++) {
-             uint256 price = poolBalance(s) - poolBalance(s - 1);
-             console.logUint(price);
-        }
+        uint256 price = poolBalance(1) - poolBalance(0);
+        console.logUint(price);
+
+        uint256 price2 = poolBalance(8e8) - poolBalance(8e8 - 1);
+        console.logUint(price2);
     }
 
     function poolBalance(uint256 supply) internal pure returns (uint256 balance){

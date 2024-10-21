@@ -20,16 +20,16 @@ abstract contract MintRichCommonStorage {
     uint256 public constant MINT_RICH_SHARE_POINTS = 1000;
     uint256 public constant MINT_RICH_BIDS_POINTS = 9000;
 
-    address internal constant REWARDS_SIGNER = 0xD23430aA3546c245c03eC1d3a2ab5D80CD98607E;
+    address internal constant REWARDS_SIGNER = 0xC565FC29F6df239Fe3848dB82656F2502286E97d;
 
-    address internal constant MINT_RICH_ADMIN = 0x4f8E0c6b39E65AD158560676bA387AfFA7AA0e17;
-    address payable internal constant MINT_RICH_RECIPIENT = payable(0x5d36B58D20f2cF17bBaaB49f88d20Aa391808633);
+    address internal constant MINT_RICH_ADMIN = 0x271561bb85251270CaA71cd6AA3332018e5cE1cA;
+    address payable internal constant MINT_RICH_RECIPIENT = payable(0xcA1F5EfC5Fb73CE3Ed7a092a2eBa8738Abf18852);
 
     address internal constant WETH9 = 0x4200000000000000000000000000000000000006;
-    address internal constant MINTSWAP_NFT_MARKETPLACE = 0x92ff395FB29Da15a5b249327E669b460a2Ec5933;
+    address internal constant MINTSWAP_NFT_MARKETPLACE = 0x7f4cF52749C1cf2835f91bb55Df63BF2d99ed8a4;
 
-    address internal constant MINTSWAP_DEX_MANAGER = 0xc07e186741A55E9C87268E4fAF1ecDb49378F0Ae;
-    address internal constant MINTSWAP_DEX_FACTORY = 0x1f88BB455E02646224A0a65f3eb4B2FCb4fb8e49;
+    address internal constant MINTSWAP_DEX_MANAGER = 0xf4c7208b413a392a792F18b84aD9ba0Df460a6d1;
+    address internal constant MINTSWAP_DEX_FACTORY = 0xB6C8B971650d96BD58c9Ba16DcFe685Bc1472e82;
 
     bytes4 internal constant WETH9_DEPOSIT_SELECTOR = bytes4(keccak256("deposit()"));
     bytes4 internal constant MINTSWAP_BIDS_SELECTOR = bytes4(keccak256("createOrUpdateCollectionBid(address,uint64,uint128,uint64,address)"));
@@ -81,6 +81,10 @@ abstract contract MintRichCommonStorage {
     DoubleEndedQueue.Bytes32Deque internal bank;
     uint256 internal bank404;
 
-    address internal constant ROUTER_ADDRESS = 0xca21Fdc7d2cCe82BC2534E861BB26BD57463Ce40;
+    address internal constant ROUTER_ADDRESS = 0xfeEDbfC8DB467ABfD7f794b9d34094F65DD0CF6c;
+
+    uint256 public constant MAX_SUPPLY_20 = 8e8;
+
+    uint256 internal bank20;
 
 }
