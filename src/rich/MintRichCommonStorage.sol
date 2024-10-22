@@ -25,11 +25,11 @@ abstract contract MintRichCommonStorage {
     address internal constant MINT_RICH_ADMIN = 0x271561bb85251270CaA71cd6AA3332018e5cE1cA;
     address payable internal constant MINT_RICH_RECIPIENT = payable(0xcA1F5EfC5Fb73CE3Ed7a092a2eBa8738Abf18852);
 
-    address internal constant WETH9 = 0x4200000000000000000000000000000000000006;
+    address internal constant WETH9 = 0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14;
     address internal constant MINTSWAP_NFT_MARKETPLACE = 0x7f4cF52749C1cf2835f91bb55Df63BF2d99ed8a4;
 
-    address internal constant MINTSWAP_DEX_MANAGER = 0xf4c7208b413a392a792F18b84aD9ba0Df460a6d1;
-    address internal constant MINTSWAP_DEX_FACTORY = 0xB6C8B971650d96BD58c9Ba16DcFe685Bc1472e82;
+    address internal constant MINTSWAP_DEX_MANAGER = 0xd3CC51Ad2F56b5fe32E52318e06a4D96b5343b24;
+    address internal constant MINTSWAP_DEX_FACTORY = 0x1ED2540E575587dcbDB089be1a705B6cB7F1f1e1;
 
     bytes4 internal constant WETH9_DEPOSIT_SELECTOR = bytes4(keccak256("deposit()"));
     bytes4 internal constant MINTSWAP_BIDS_SELECTOR = bytes4(keccak256("createOrUpdateCollectionBid(address,uint64,uint128,uint64,address)"));
@@ -81,7 +81,7 @@ abstract contract MintRichCommonStorage {
     DoubleEndedQueue.Bytes32Deque internal bank;
     uint256 internal bank404;
 
-    address internal constant ROUTER_ADDRESS = 0xfeEDbfC8DB467ABfD7f794b9d34094F65DD0CF6c;
+    address internal constant ROUTER_ADDRESS = 0x1d747A0872a3b43E13846ac14ab6b68be4f368a0;
 
     uint256 public constant MAX_SUPPLY_20 = 8e8;
 

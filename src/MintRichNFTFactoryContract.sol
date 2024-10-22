@@ -25,7 +25,8 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
 
     function initialize(
         address _implementationERC721A,
-        address _implementationERC404
+        address _implementationERC404,
+        address _implementationERC20
     ) initializer external {
         __ERC721_init("MintRich Owner", "MROwner");
         __Ownable_init(_msgSender());
@@ -33,9 +34,11 @@ contract MintRichNFTFactoryContract is ERC721Upgradeable, OwnableUpgradeable, UU
 
         require(_implementationERC721A != address(0), "_implementationERC721A can't be zero address"); 
         require(_implementationERC404 != address(0), "_implementationERC404 can't be zero address"); 
+        require(_implementationERC20 != address(0), "_implementationERC20 can't be zero address"); 
 
         implementationTypes[0] = _implementationERC721A;
         implementationTypes[1] = _implementationERC404;
+        implementationTypes[2] = _implementationERC20;
     }
 
     function createRichCollection(

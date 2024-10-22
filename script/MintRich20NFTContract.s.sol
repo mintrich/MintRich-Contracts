@@ -14,7 +14,7 @@ contract MintRich20NFTContractScript is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         MintRich20NFTContract logic = new MintRich20NFTContract();
-        console.log("beaconProxy -> %s", address(logic));
+        console.log("logic -> %s", address(logic));
         
         vm.stopBroadcast();
     }

@@ -15,7 +15,8 @@ contract MintRichNFTFactoryContractScript is Script {
         address factoryProxy = Upgrades.deployUUPSProxy(
             "MintRichNFTFactoryContract.sol",
             abi.encodeCall(MintRichNFTFactoryContract.initialize, 
-            (0xEfDdE62e4a8905A972b99b2fd643e9fE31779bb2, 0xBf34b99aA2e64594eDc8BA6a44449c41a8514cA9))
+            (0x8DaaebB56a513BF51b87749A69f8a9FE8c5A34f7, 0x8DaaebB56a513BF51b87749A69f8a9FE8c5A34f7,
+             0x8DaaebB56a513BF51b87749A69f8a9FE8c5A34f7))
         );
         console.log("factoryProxy -> %s", factoryProxy);
 
