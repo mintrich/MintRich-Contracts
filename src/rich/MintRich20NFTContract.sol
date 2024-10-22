@@ -86,19 +86,19 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
 
         if (bank20 > 0) {
             uint256 withdrawAmount = Math.min(amount, bank20);
-            _transfer(address(this), buyer, withdrawAmount * decimals());
+            _transfer(address(this), buyer, withdrawAmount * 10 ** decimals());
             
             bank20 -= withdrawAmount;
             mintAmount = amount - withdrawAmount;
         }
 
         if (mintAmount > 0) {
-            _mint(buyer, mintAmount * decimals());
+            _mint(buyer, mintAmount * 10 ** decimals());
         }
     }
 
     function sell(uint256 amount) external nonReentrant checkSalePhase {
-        require(amount > 0 && amount * decimals() <= balanceOf(msg.sender), "Sell amount exceeds owned amount");
+        require(amount > 0 && amount * 10 ** decimals() <= balanceOf(msg.sender), "Sell amount exceeds owned amount");
         
         (uint256 prices, uint256 fees) = sellQuota(amount);
         uint256 receivedPrices = prices - fees;
@@ -114,7 +114,7 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
     }
 
     function sellNFTs(uint256 amount) internal {
-        transfer(address(this), amount * decimals());
+        transfer(address(this), amount * 10 ** decimals());
         bank20 += amount;
     }
 
@@ -137,7 +137,7 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
         require(salePhase == SalePhase.CLOSED, "Sale not closed");
 
         uint256 liquidityETH = saleBalance();
-        uint256 liquidityERC20 = 2e8 * decimals();
+        uint256 liquidityERC20 = 2e8 * 10 ** decimals();
         _mint(address(this), liquidityERC20);
 
         (address token0, address token1) = address(this) < WETH9 ? (address(this), WETH9) : (WETH9, address(this));
@@ -148,7 +148,7 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
             IERC20(address(this)).approve(MINTSWAP_DEX_MANAGER, liquidityERC20);
 
             uint256 liquidityETHMin = 7.2 ether;
-            uint256 liquidityERC20Min = 18e7 * decimals();
+            uint256 liquidityERC20Min = 18e7 * 10 ** decimals();
             bool isToken0WETH9 = token0 == WETH9;
 
             MintParams memory params = MintParams({
