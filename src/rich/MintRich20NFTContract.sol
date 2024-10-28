@@ -5,8 +5,6 @@ import "./MintRichCommonStorage.sol";
 import "../libs/MintRich20PriceLib.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/utils/Base64.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -62,7 +60,7 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
     }
 
     function buy(uint256 amount) external payable nonReentrant checkSalePhase {
-        require(amount > 0 && activeSupply + amount <= MAX_SUPPLY_20, "Buy amount exceeds MAX_SUPPLY_404 limit");
+        require(amount > 0 && activeSupply + amount <= MAX_SUPPLY_20, "Buy amount exceeds MAX_SUPPLY_20 limit");
 
         (uint256 prices, uint256 fees) = buyQuota(amount);
         uint256 totalPrices = prices + fees;
