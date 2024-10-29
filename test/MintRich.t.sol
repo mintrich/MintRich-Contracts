@@ -42,7 +42,7 @@ contract TestMintRich is Test {
 
         factoryProxy = Upgrades.deployUUPSProxy(
             "MintRichNFTFactoryContract.sol",
-            abi.encodeCall(MintRichNFTFactoryContract.initialize, (beaconProxy, beaconProxy))
+            abi.encodeCall(MintRichNFTFactoryContract.initialize, (beaconProxy, beaconProxy, beaconProxy))
         );
         console.log("factoryProxy -> %s", factoryProxy);
 
