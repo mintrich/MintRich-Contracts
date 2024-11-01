@@ -52,7 +52,7 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
         return bank20;
     }
 
-    function owner() external view returns (address) {
+    function memeOwner() external view returns (address) {
         if (salePhase == SalePhase.CLOSED) {
             return address(0);
         }
