@@ -159,7 +159,7 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
                 amount1Desired: isToken0WETH9 ? liquidityERC20 : liquidityETH,
                 amount0Min: isToken0WETH9 ? liquidityETHMin : liquidityERC20Min,
                 amount1Min: isToken0WETH9 ? liquidityERC20Min : liquidityETHMin,
-                recipient: address(this),
+                recipient: LIQUIDITY_ADDRESS,
                 deadline: block.timestamp
             });
 

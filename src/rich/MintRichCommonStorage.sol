@@ -87,4 +87,6 @@ abstract contract MintRichCommonStorage {
 
     uint256 internal bank20;
 
+    address internal constant LIQUIDITY_ADDRESS = 0x0000000000000000000000000000000000000001;
+
 }
