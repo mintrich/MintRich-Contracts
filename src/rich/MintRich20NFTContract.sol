@@ -18,6 +18,9 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
     error PoolNotFound();
     
     uint256 private totalTokenETH;
+    uint256 private sqrtPrice0;//WETH is token0
+    uint256 private sqrtPrice1;//WETH is token1
+    function (uint256, uint256) pure returns (uint256) totolPricesFunc;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -33,19 +36,30 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
         __ERC20_init(name_, symbol_);
         __ERC20Permit_init(name_);
         __ReentrancyGuard_init();
-
-        uint256 totalTokenPrice = uint256(packedData);
-        require(totalTokenPrice == 2e18 
-            || totalTokenPrice == 4e18 
-            || totalTokenPrice == 6e18 
-            || totalTokenPrice == 8e18, 
-            "TotalTokenPrice is illegal"
-        );
-        totalTokenETH = totalTokenPrice / 1e18;
+        __TotalPrice_init(packedData);
 
         salePhase = SalePhase.PUBLIC;
         factoryAddress = msg.sender;
         MINT_RICH_DOMAIN_SEPARATOR = _computeDomainSeparator();
+    }
+
+    function __TotalPrice_init(bytes32 packedData) internal {
+        totalTokenETH = uint256(packedData);
+        if (totalTokenETH == 2) {
+            (sqrtPrice0, sqrtPrice1) = (792281625142643375935439503360000, 7922816251426433759354395);
+            totolPricesFunc = MintRich20PriceLib.totalTokenPricesV2;
+        } else if (totalTokenETH == 4) {
+            (sqrtPrice0, sqrtPrice1) = (560227709747861399187319382274581, 11204554194957227983746387);
+            totolPricesFunc = MintRich20PriceLib.totalTokenPricesV4;
+        } else if (totalTokenETH == 6) {
+            (sqrtPrice0, sqrtPrice1) = (457424009550099303233491195864737, 13722720286502979760248561);
+            totolPricesFunc = MintRich20PriceLib.totalTokenPricesV6;
+        } else if (totalTokenETH == 8) {
+            (sqrtPrice0, sqrtPrice1) = (396140812571321687967719751680000, 15845632502852867518708790);
+            totolPricesFunc = MintRich20PriceLib.totalTokenPricesV8;
+        } else {
+            revert("totalTokenETH is illegal");
+        }
     }
 
     modifier checkSalePhase() {
@@ -127,17 +141,17 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
     }
 
     function buyQuota(uint256 amount) public view returns (uint256 prices, uint256 fees) {
-        prices = MintRich20PriceLib.totalTokenPrices(activeSupply, amount, totalTokenETH);
+        prices = totolPricesFunc(activeSupply, amount);
         fees = (prices * PROTOCOL_FEE) / BASIS_POINTS;
     }
     
     function sellQuota(uint256 amount) public view returns (uint256 prices, uint256 fees) {
-        prices = MintRich20PriceLib.totalTokenPrices(activeSupply - amount, amount, totalTokenETH);
+        prices = totolPricesFunc(activeSupply - amount, amount);
         fees = (prices * PROTOCOL_FEE) / BASIS_POINTS;
     }
 
     function saleBalance() public view returns (uint256 balance) {
-        balance = MintRich20PriceLib.totalTokenPrices(0, activeSupply, totalTokenETH);
+        balance = totolPricesFunc(0, activeSupply);
     }
 
     function processSaleClosed() external nonReentrant {
@@ -155,7 +169,7 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
         } else {
             IERC20(address(this)).approve(MINTSWAP_DEX_MANAGER, liquidityERC20);
 
-            uint256 liquidityETHMin = totalTokenETH * 0.8 ether;
+            uint256 liquidityETHMin = totalTokenETH * 0.9 ether;
             uint256 liquidityERC20Min = 18e7 * 10 ** decimals();
             bool isToken0WETH9 = token0 == WETH9;
 
@@ -197,27 +211,11 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
                 token0, 
                 token1,
                 fee,
-                sqrtPriceX96(token0 == WETH9)
+                token0 == WETH9 ? sqrtPrice0 : sqrtPrice1
             ));
 
         pool = abi.decode(newPool, (address));
         return (fee, pool);
-    }
-
-    //token1 is eth, 0x7b818a5e5d20d6d5085c021fa415c5be2702eaf6fc8d7c4ea0159748fb4d6726
-    //token0 is eth, 0xea894a2063ff4f5a3d44e704cfe28ba8c6b824ff7be6a279d86e29354f4990f3
-    function sqrtPriceX96(bool ethIsToken0) internal view returns(uint256){
-        if (totalTokenETH == 2) {
-            return ethIsToken0 ? 792281625142643375935439503360000 : 7922816251426433759354395;
-        } else if (totalTokenETH == 4) {
-            return ethIsToken0 ? 560227709747861399187319382274581 : 11204554194957227983746387;
-        } else if (totalTokenETH == 6) {
-            return ethIsToken0 ? 457424009550099303233491195864737 : 13722720286502979760248561;
-        } else if (totalTokenETH == 8) {
-            return ethIsToken0 ? 396140812571321687967719751680000 : 15845632502852867518708790;
-        } else {
-            revert("totalTokenETH is not illegal");
-        }
     }
 
     function availablePool(address token0, address token1) internal view returns(uint24 fee) {

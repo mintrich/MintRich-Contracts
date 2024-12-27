@@ -17,17 +17,30 @@ contract FixedTest is Test {
 
     function testERC20Price(uint256 totalTokenPrices) private view {
         uint256 totalTokenETH = totalTokenPrices/1e18; // 8 ETH
-        uint256 price0 = MintRich20PriceLib.totalTokenPrices(0, 1, totalTokenETH);
-        uint256 price1 = MintRich20PriceLib.totalTokenPrices(2e7 - 1, 1, totalTokenETH);
-        uint256 price2 = MintRich20PriceLib.totalTokenPrices(5e7 - 1, 1, totalTokenETH);
-        uint256 price3 = MintRich20PriceLib.totalTokenPrices(1e8 - 1, 1, totalTokenETH);
-        uint256 price4 = MintRich20PriceLib.totalTokenPrices(2e8 - 1, 1, totalTokenETH);
-        uint256 price5 = MintRich20PriceLib.totalTokenPrices(3e8 - 1, 1, totalTokenETH);
-        uint256 price6 = MintRich20PriceLib.totalTokenPrices(4e8 - 1, 1, totalTokenETH);
-        uint256 price7 = MintRich20PriceLib.totalTokenPrices(5e8 - 1, 1, totalTokenETH);
-        uint256 maxPrice = MintRich20PriceLib.totalTokenPrices(8e8 - 1, 1, totalTokenETH);
+        function (uint256, uint256) pure returns (uint256) totolPricesFunc;
+        if (totalTokenETH == 2) {
+            totolPricesFunc = MintRich20PriceLib.totalTokenPricesV2;
+        } else if (totalTokenETH == 4) {
+            totolPricesFunc = MintRich20PriceLib.totalTokenPricesV4;
+        } else if (totalTokenETH == 6) {
+            totolPricesFunc = MintRich20PriceLib.totalTokenPricesV6;
+        } else if (totalTokenETH == 8) {
+            totolPricesFunc = MintRich20PriceLib.totalTokenPricesV8;
+        } else {
+            revert("totalTokenETH is illegal");
+        }
 
-        uint256 totalTokenPrice = MintRich20PriceLib.totalTokenPrices(0, 8e8, totalTokenETH);
+        uint256 price0 = totolPricesFunc(0, 1);
+        uint256 price1 = totolPricesFunc(2e7 - 1, 1);
+        uint256 price2 = totolPricesFunc(5e7 - 1, 1);
+        uint256 price3 = totolPricesFunc(1e8 - 1, 1);
+        uint256 price4 = totolPricesFunc(2e8 - 1, 1);
+        uint256 price5 = totolPricesFunc(3e8 - 1, 1);
+        uint256 price6 = totolPricesFunc(4e8 - 1, 1);
+        uint256 price7 = totolPricesFunc(5e8 - 1, 1);
+        uint256 maxPrice = totolPricesFunc(8e8 - 1, 1);
+
+        uint256 totalTokenPrice = totolPricesFunc(0, 8e8);
         assertEq(totalTokenPrice, totalTokenPrices, "totalTokenPrice not match");
         assertEq(maxPrice/price0, 33, "price curve should not change");
         assertEq(maxPrice/price1, 30, "price curve should not change");
