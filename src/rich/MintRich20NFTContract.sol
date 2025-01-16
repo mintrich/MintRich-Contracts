@@ -88,7 +88,7 @@ contract MintRich20NFTContract is ERC20PermitUpgradeable, MintRichCommonStorage,
 
         (uint256 prices, uint256 fees) = buyQuota(amount);
         uint256 totalPrices = prices + fees;
-        require(totalPrices <= msg.value, "Not enough ETH to buy NFTs");
+        require(totalPrices <= msg.value, "Not enough ETH to buy");
 
         totalFees += fees;
         uint256 preSupply = activeSupply;
